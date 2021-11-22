@@ -2,3 +2,4 @@
 
 export(fetch_diva_csv02)
 export(fetch_diva_csvall2)
+import(dplyr)
