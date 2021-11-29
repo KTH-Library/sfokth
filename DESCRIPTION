@@ -4,8 +4,12 @@ Title: Internt paket för att hantera SFO-data
 Version: 0.1.0
 Author: Agne
 Maintainer: Agne Larsson <agnel@kth.se>
-Description: Hämta och filtrera DiVA-data för SFO:er
-License: Freeeee
+Description: Hämta och filtrera DiVA-data för SFO.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
+Imports: 
+    dplyr,
+    odbc,
+    glue
