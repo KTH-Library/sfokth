@@ -11,5 +11,4 @@ LazyData: true
 RoxygenNote: 7.1.2
 Imports: 
     dplyr,
-    odbc,
-    glue
+    odbc
