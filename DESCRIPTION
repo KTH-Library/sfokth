@@ -1,4 +1,4 @@
-Package: sfo_kth
+Package: sfokth
 Type: Package
 Title: Internt paket för att hantera SFO-data
 Version: 0.1.0
