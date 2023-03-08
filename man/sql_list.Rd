@@ -2,7 +2,7 @@
 % Please edit documentation in R/db.R
 \name{sql_list}
 \alias{sql_list}
-\title{Make SQL WHERE clause friendly list out of R vector}
+\title{Make SQL WHERE clause friendly list out of R vector of strings}
 \usage{
 sql_list(items)
 }
@@ -13,5 +13,5 @@ sql_list(items)
 character
 }
 \description{
-Make SQL WHERE clause friendly list out of R vector
+Make SQL WHERE clause friendly list out of R vector of strings
 }

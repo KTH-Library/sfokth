@@ -23,6 +23,9 @@ fetch_diva_csv02 <- function(baseurl, startyear, stopyear) {
 #' @importFrom stringr str_pad
 #' @export
 fetch_diva_csvall2 <- function(baseurl, startyear, stopyear) {
+
+  ISI <- NULL
+
   url <- sprintf('http://%s/smash/export.jsf?format=csvall2&aq=[[]]&aqe=[]&aq2=[[{"dateIssued":{"from":"%d","to":"%d"}},{"publicationTypeCode":["review","bookReview","monographLicentiateThesis","article","comprehensiveLicentiateThesis","book","manuscript","patent","dissertation","conferenceProceedings","monographDoctoralThesis","report","comprehensiveDoctoralThesis","collection","chapter","conferencePaper","other"]},{"contentTypeCode":["refereed","science","other"]}]]&onlyFullText=false&noOfRows=100000&sortOrder=author_sort_asc', baseurl, startyear, stopyear)
   csvall2 <- read.csv(url, encoding = "UTF-8")
   names(csvall2)[1] <- "PID"
@@ -60,6 +63,9 @@ searchauth_diva_csv02 <- function(baseurl, authors, startyear, stopyear) {
 #' @importFrom stringr str_pad
 #' @export
 searchauth_diva_csvall2 <- function(baseurl, authors, startyear, stopyear) {
+
+  ISI <- NULL
+
   authq <- paste(paste0('[{"authorId":"', authors, '"}]'), collapse = ",")
   url <- sprintf('http://%s/smash/export.jsf?format=csvall2&aq=[%s]&aqe=[]&aq2=[[{"dateIssued":{"from":"%d","to":"%d"}},{"publicationTypeCode":["review","bookReview","monographLicentiateThesis","article","comprehensiveLicentiateThesis","book","manuscript","patent","dissertation","conferenceProceedings","monographDoctoralThesis","report","comprehensiveDoctoralThesis","collection","chapter","conferencePaper","other"]},{"contentTypeCode":["refereed","science","other"]}]]&onlyFullText=false&noOfRows=100000&sortOrder=author_sort_asc', baseurl, authq, startyear, stopyear)
   csvall2 <- read.csv(url, encoding = "UTF-8")
