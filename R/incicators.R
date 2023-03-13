@@ -76,7 +76,8 @@ indics_full <- function(data, startyear, stopyear, analysisyear) {
   }
 
   data <- data %>%
-    filter(Publication_Year %in% startyear:stopyear) %>%
+    filter(Publication_Year %in% startyear:stopyear,
+           Publication_Type_WoS %in% c("Article", "Review")) %>%
     mutate(Publication_Year = as.character(Publication_Year),
            iswos = !is.na(WebofScience_ID),
            isscop = !is.null(ScopusID),
@@ -183,7 +184,8 @@ indics_frac <- function(data, startyear, stopyear, analysisyear) {
   }
 
   data <- data %>%
-    filter(Publication_Year %in% startyear:stopyear) %>%
+    filter(Publication_Year %in% startyear:stopyear,
+           Publication_Type_WoS %in% c("Article", "Review")) %>%
     mutate(Publication_Year = as.character(Publication_Year),
            iswos = !is.na(WebofScience_ID),
            isscop = !is.null(ScopusID),
