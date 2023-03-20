@@ -4,7 +4,13 @@
 \alias{graph_by_year}
 \title{Graph indicator by time}
 \usage{
-graph_by_year(df, graphvar, timevar = "Publication_Year", horizontal = NULL)
+graph_by_year(
+  df,
+  graphvar,
+  timevar = "Publication_Year",
+  horizontal = NULL,
+  perc = FALSE
+)
 }
 \arguments{
 \item{df}{data frame with indicators by year}
@@ -14,6 +20,8 @@ graph_by_year(df, graphvar, timevar = "Publication_Year", horizontal = NULL)
 \item{timevar}{name of column with time, default Publication_Year}
 
 \item{horizontal}{where to put a horizontal line, default NULL}
+
+\item{perc}{set to TRUE for percent scale y axis, default FALSE}
 }
 \description{
 Graph indicator by time

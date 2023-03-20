@@ -2,7 +2,7 @@
 % Please edit documentation in R/sfo-diva.R
 \name{searchauth_diva_csv02}
 \alias{searchauth_diva_csv02}
-\title{Get "csv02" export from DiVA}
+\title{Get "csv02" export from DiVA, search by authorId}
 \usage{
 searchauth_diva_csv02(baseurl, authors, startyear, stopyear)
 }
@@ -16,5 +16,5 @@ searchauth_diva_csv02(baseurl, authors, startyear, stopyear)
 \item{stopyear}{the last publication year to consider}
 }
 \description{
-Get "csv02" export from DiVA
+Get "csv02" export from DiVA, search by authorId
 }
