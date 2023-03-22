@@ -1,3 +1,5 @@
+### TODO; Inför rlang::chr_unserialise_unicode på lämpliga ställen ###
+
 #' Get "csv02" export from DiVA
 #'
 #' @param baseurl the base url for the DiVA instance
@@ -23,6 +25,7 @@ fetch_diva_csv02 <- function(baseurl, startyear, stopyear) {
 #' @import dplyr
 #' @importFrom utils read.csv
 #' @importFrom stringr str_pad
+#' @importFrom rlang chr_unserialise_unicode
 #' @export
 fetch_diva_csvall2 <- function(baseurl, startyear, stopyear) {
 
@@ -39,7 +42,8 @@ fetch_diva_csvall2 <- function(baseurl, startyear, stopyear) {
            SeriesISSN = as.character(SeriesISSN),
            SeriesEISSN = as.character(SeriesEISSN),
            ISBN = as.character(ISBN),
-           ArticleId = as.character(ArticleId))
+           ArticleId = as.character(ArticleId),
+           PublicationType = chr_unserialise_unicode(PublicationType))
 }
 
 
@@ -71,6 +75,7 @@ searchauth_diva_csv02 <- function(baseurl, authors, startyear, stopyear) {
 #' @import dplyr
 #' @importFrom utils read.csv
 #' @importFrom stringr str_pad
+#' @importFrom rlang chr_unserialise_unicode
 #' @export
 searchauth_diva_csvall2 <- function(baseurl, authors, startyear, stopyear) {
 
@@ -92,6 +97,6 @@ searchauth_diva_csvall2 <- function(baseurl, authors, startyear, stopyear) {
            SeriesISSN = as.character(SeriesISSN),
            SeriesEISSN = as.character(SeriesEISSN),
            ISBN = as.character(ISBN),
-           ArticleId = as.character(ArticleId))
+           ArticleId = as.character(ArticleId),
+           PublicationType = chr_unserialise_unicode(PublicationType))
 }
-
