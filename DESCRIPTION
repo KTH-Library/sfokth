@@ -1,8 +1,8 @@
 Package: sfokth
 Type: Package
-Title: Internt paket för att hantera SFO-data
+Title: Paket för att hantera SFO-data på KTH
 Version: 0.1.0
-Author: Agne
+Author: Agne Larsson
 Maintainer: Agne Larsson <agnel@kth.se>
 Description: Hämta och filtrera DiVA-data för SFO.
 License: MIT + file LICENSE
