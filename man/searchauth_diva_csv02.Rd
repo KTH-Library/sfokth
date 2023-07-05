@@ -9,7 +9,7 @@ searchauth_diva_csv02(baseurl, authors, startyear, stopyear)
 \arguments{
 \item{baseurl}{the base url for the DiVA instance}
 
-\item{authors}{list of authors}
+\item{authors}{list of authors (Id and/or Orcid)}
 
 \item{startyear}{the first publication year to consider}
 

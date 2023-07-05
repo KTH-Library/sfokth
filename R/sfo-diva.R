@@ -50,7 +50,7 @@ fetch_diva_csvall2 <- function(baseurl, startyear, stopyear) {
 #' Get "csv02" export from DiVA, search by authorId
 #'
 #' @param baseurl the base url for the DiVA instance
-#' @param authors list of authors
+#' @param authors list of authors (Id and/or Orcid)
 #' @param startyear the first publication year to consider
 #' @param stopyear the last publication year to consider
 #' @import dplyr
@@ -69,7 +69,7 @@ searchauth_diva_csv02 <- function(baseurl, authors, startyear, stopyear) {
 #' Get "csvall2" export from DiVA, search by authorId
 #'
 #' @param baseurl the base url for the DiVA instance
-#' @param authors list of authors
+#' @param authors list of authors (Id and/or Orcid)
 #' @param startyear the first publication year to consider
 #' @param stopyear the last publication year to consider
 #' @import dplyr
