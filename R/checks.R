@@ -12,8 +12,6 @@
 
 name_address_check <- function(con, uts, lastname, org_id = NULL){
 
-  uts_string <- paste0("'", uts, "'", collapse = ", ")
-
   org_string <- if_else(is.null(org_id), "", paste("AND bra.Unified_org_id = ", org_id))
 
   q <- sprintf(
@@ -24,7 +22,7 @@ name_address_check <- function(con, uts, lastname, org_id = NULL){
   %s
     ",
   lastname,
-  uts_string,
+  sql_list(uts),
   org_string
   )
 
