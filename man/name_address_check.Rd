@@ -4,7 +4,7 @@
 \alias{name_address_check}
 \title{List full name and address for list of UT:s, a last name and an org_id}
 \usage{
-name_address_check(con, uts, lastname, org_id = 8)
+name_address_check(con, uts, lastname, org_id = NULL)
 }
 \arguments{
 \item{con}{a connection to Bibmet}
@@ -13,7 +13,7 @@ name_address_check(con, uts, lastname, org_id = 8)
 
 \item{lastname}{Last name of the person to check}
 
-\item{org_id}{Unified_org_id of the org of interest (default 8 = KTH)}
+\item{org_id}{Unified_org_id of the org of interest, if null no limitation on org}
 }
 \description{
 List full name and address for list of UT:s, a last name and an org_id
