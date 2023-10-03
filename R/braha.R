@@ -1,3 +1,12 @@
+#' Make SQL WHERE clause friendly list out of R vector of strings
+#'
+#' @param items vector of items to list (e.g. UT numbers, KTH-ids ...)
+#' @returns character
+#' @export
+sql_list <- function(items) {
+  paste(paste0("'", items, "'"), collapse = ",")
+}
+
 #' Get intervals for given years and width
 #'
 #' @param years the years to create intervals from
@@ -13,16 +22,17 @@ intervalify <- function(years, width = 3, from_highest = TRUE) {
   maxyear = max(tmp)
 
   if(from_highest) {
-    tmp |>
+    tmp <- tmp |>
       mutate(upper = year + (maxyear - year) %% width,
-             lower = upper - width + 1,
-             interval = paste(ifelse(minyear < lower, lower, minyear), '-',
-                              ifelse(maxyear > upper, upper, maxyear)))
+             lower = upper - width + 1)
   } else {
-    tmp |>
+    tmp <- tmp |>
       mutate(lower = year - (year - minyear) %% width,
-             upper = lower + width - 1,
-             interval = paste(ifelse(minyear < lower, lower, minyear), '-',
-                              ifelse(maxyear > upper, upper, maxyear)))
+             upper = lower + width - 1)
   }
+
+  tmp |>
+    mutate(interval = paste(ifelse(minyear < lower, lower, minyear), '-',
+                            ifelse(maxyear > upper, upper, maxyear))) |>
+    select(year, interval)
 }

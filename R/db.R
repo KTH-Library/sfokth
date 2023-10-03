@@ -21,12 +21,3 @@ con_bibmet <- function(db = "BIBMET",
     PWD = pass,
     encoding = "Windows-1252")
 }
-
-#' Make SQL WHERE clause friendly list out of R vector of strings
-#'
-#' @param items vector of items to list (e.g. UT numbers, KTH-ids ...)
-#' @returns character
-#' @export
-sql_list <- function(items) {
-  paste(paste0("'", items, "'"), collapse = ",")
-}
