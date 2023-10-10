@@ -12,9 +12,9 @@ graph_by_year <- function(df, graphvar, timevar = "Publication_Year", horizontal
 
   kth_cols <- palette_kth(4)
 
-  graphdf <- data.frame(df[, timevar], df[, graphvar]) %>%
-    rename(xvar = timevar, yvar = graphvar) %>%
-    filter(xvar != "Total", !is.na(yvar)) %>%
+  graphdf <- data.frame(df[, timevar], df[, graphvar]) |>
+    rename(xvar = timevar, yvar = graphvar) |>
+    filter(xvar != "Total", !is.na(yvar)) |>
     mutate(xvar = as.integer(xvar))
 
   if(perc){
@@ -29,7 +29,7 @@ graph_by_year <- function(df, graphvar, timevar = "Publication_Year", horizontal
   if(length(breaks) != nrow(graphdf)) {
     extrayears <- breaks[!breaks %in% graphdf$xvar]
     extrarows <- data.frame(xvar = extrayears)
-    graphdf <- bind_rows(graphdf, extrarows) %>% arrange(xvar)
+    graphdf <- bind_rows(graphdf, extrarows) |> arrange(xvar)
   }
 
   gg <- ggplot(data = graphdf,
@@ -54,4 +54,78 @@ graph_by_year <- function(df, graphvar, timevar = "Publication_Year", horizontal
   }
 
   gg
+}
+
+#' Plot cf and jcf by site with circles proportional to number of publications
+#'
+#' @param df data frame with indicators by site (needs site, p, cf, jcf)
+#' @param unfilled vector of sites to draw unfilled circle for (default empty)
+#' @param xintercept where to put a vertical line, default 1
+#' @param yintercept where to put a horizontal line, default 1
+#' @param maxsize maximum size of circle (default 50)
+#' @param pal colors to use
+#' @import ktheme dplyr ggplot2 scales
+#' @export
+cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxsize = 50, pal = palette_kth_neo()) {
+
+  names(pal) <- NULL
+  tmp_df <- df |>
+    mutate(size = maxsize * sqrt(p/max(p)),
+           pch = if_else(site %in% unfilled, 1, 16))
+
+  minsize <- min(tmp_df$size)
+  xmax <- ceiling(max(tmp_df$cf))
+  ymax <- ceiling(max(tmp_df$jcf))
+
+  ggplot(tmp_df) +
+    geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = pch)) +
+    scale_shape_identity() +
+    scale_color_manual(values = pal) +
+    scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
+    geom_vline(xintercept = xintercept, color = "red", size = 1) +
+    geom_hline(yintercept = yintercept, color = "red", size = 1) +
+    scale_x_continuous(limits = c(0, xmax), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0, ymax), expand = c(0,0)) +
+    theme_light() +
+    theme(legend.position = "right") +
+    xlab("Cf value") +
+    ylab("Jcf value")
+}
+
+#' Plot top10 and jcf by site with circles proportional to number of publications
+#'
+#' @param df data frame with indicators by site (needs site, p, top10, top20)
+#' @param unfilled vector of sites to draw unfilled circle for (default empty)
+#' @param xintercept where to put a vertical line, default 0.1
+#' @param yintercept where to put a horizontal line, default 0.2
+#' @param maxsize maximum size of circle (default 50)
+#' @param pal colors to use
+#' @import ktheme dplyr ggplot2 scales
+#' @export
+top10_top20_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, maxsize = 50, pal = palette_kth_neo()) {
+
+  names(pal) <- NULL
+  tmp_df <- df |>
+    mutate(size = maxsize * sqrt(p/max(p)),
+           pch = if_else(site %in% unfilled, 1, 16))
+
+  minsize <- min(tmp_df$size)
+  xmax <- ceiling(10*max(tmp_df$top10))/10
+  ymax <- ceiling(10*max(tmp_df$top20))/10
+  xbreaks <- seq(0, xmax, 0.1)
+  ybreaks <- seq(0, ymax, 0.1)
+
+  ggplot(tmp_df) +
+    geom_point(aes(x = top10, y = top20, size = size, color = site, shape = pch)) +
+    scale_shape_identity() +
+    scale_color_manual(values = pal) +
+    scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
+    geom_vline(xintercept = xintercept, color = "red", size = 1) +
+    geom_hline(yintercept = yintercept, color = "red", size = 1) +
+    scale_x_continuous(limits = c(0, xmax), breaks = xbreaks, labels = percent_format(), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0, ymax), breaks = ybreaks, labels = percent_format(), expand = c(0,0)) +
+    theme_light() +
+    theme(legend.position = "right") +
+    xlab("Share Top10% publications") +
+    ylab("Share publications in Top20% journals")
 }
