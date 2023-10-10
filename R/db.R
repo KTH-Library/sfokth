@@ -19,5 +19,5 @@ con_bibmet <- function(db = "BIBMET",
     database = db,
     UID = user,
     PWD = pass,
-    encoding = "Windows-1252")
+    encoding = "UTF-8")
 }
