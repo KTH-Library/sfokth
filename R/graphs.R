@@ -77,18 +77,21 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
   xmax <- ceiling(max(tmp_df$cf))
   ymax <- ceiling(max(tmp_df$jcf))
 
+  shapevals <- tmp_df$pch |> rev()
+
   ggplot(tmp_df) +
-    geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = pch, stroke = 2, alpha = 0.5)) +
-    scale_shape_identity() +
+    geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = site, stroke = 2, alpha = 0.5)) +
     scale_color_manual(values = pal) +
+    scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = "red", size = 1) +
-    geom_hline(yintercept = yintercept, color = "red", size = 1) +
+    geom_vline(xintercept = xintercept, color = "red", linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = "red", linewidth = 1) +
     scale_x_continuous(limits = c(0, xmax), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), expand = c(0,0)) +
     theme_light() +
     theme(legend.position = "right") +
+    guides(color = guide_legend(override.aes = list(size = 5))) +
     xlab("Cf value") +
     ylab("Jcf value")
 }
@@ -116,18 +119,21 @@ top10_top20_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 
   xbreaks <- seq(0, xmax, 0.1)
   ybreaks <- seq(0, ymax, 0.1)
 
+  shapevals <- tmp_df$pch |> rev()
+
   ggplot(tmp_df) +
-    geom_point(aes(x = top10, y = top20, size = size, color = site, shape = pch, stroke = 2, alpha = 0.5)) +
-    scale_shape_identity() +
+    geom_point(aes(x = top10, y = top20, size = size, color = site, shape = site, stroke = 2, alpha = 0.5)) +
     scale_color_manual(values = pal) +
+    scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = "red", size = 1) +
-    geom_hline(yintercept = yintercept, color = "red", size = 1) +
+    geom_vline(xintercept = xintercept, color = "red", linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = "red", linewidth = 1) +
     scale_x_continuous(limits = c(0, xmax), breaks = xbreaks, labels = percent_format(), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), breaks = ybreaks, labels = percent_format(), expand = c(0,0)) +
     theme_light() +
     theme(legend.position = "right") +
+    guides(color = guide_legend(override.aes = list(size = 5))) +
     xlab("Share Top10% publications") +
     ylab("Share publications in Top20% journals")
 }
