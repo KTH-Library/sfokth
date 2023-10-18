@@ -78,10 +78,11 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
   ymax <- ceiling(max(tmp_df$jcf))
 
   ggplot(tmp_df) +
-    geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = pch)) +
+    geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = pch, stroke = 2, alpha = 0.5)) +
     scale_shape_identity() +
     scale_color_manual(values = pal) +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
+    scale_alpha_identity(guide = "none") +
     geom_vline(xintercept = xintercept, color = "red", size = 1) +
     geom_hline(yintercept = yintercept, color = "red", size = 1) +
     scale_x_continuous(limits = c(0, xmax), expand = c(0,0)) +
@@ -116,10 +117,11 @@ top10_top20_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 
   ybreaks <- seq(0, ymax, 0.1)
 
   ggplot(tmp_df) +
-    geom_point(aes(x = top10, y = top20, size = size, color = site, shape = pch)) +
+    geom_point(aes(x = top10, y = top20, size = size, color = site, shape = pch, stroke = 2, alpha = 0.5)) +
     scale_shape_identity() +
     scale_color_manual(values = pal) +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
+    scale_alpha_identity(guide = "none") +
     geom_vline(xintercept = xintercept, color = "red", size = 1) +
     geom_hline(yintercept = yintercept, color = "red", size = 1) +
     scale_x_continuous(limits = c(0, xmax), breaks = xbreaks, labels = percent_format(), expand = c(0,0)) +
