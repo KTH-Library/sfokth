@@ -10,7 +10,8 @@ top10_top20_plot(
   xintercept = 0.1,
   yintercept = 0.2,
   maxsize = 50,
-  pal = palette_kth_neo()
+  pal = palette_kth_neo(),
+  solid = 0.9
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ top10_top20_plot(
 \item{maxsize}{maximum size of circle (default 50)}
 
 \item{pal}{colors to use}
+
+\item{solid}{alpha value for circles, 1 = fully solid, 0 = fully transparent}
 }
 \description{
 Plot top10 and jcf by site with circles proportional to number of publications
