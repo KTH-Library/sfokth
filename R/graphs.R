@@ -77,7 +77,7 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
   xmax <- ceiling(max(tmp_df$cf))
   ymax <- ceiling(max(tmp_df$jcf))
 
-  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
+  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16) |> rev()
 
   ggplot(tmp_df) +
     geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
@@ -119,7 +119,7 @@ top10_top20_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 
   xbreaks <- seq(0, xmax, 0.1)
   ybreaks <- seq(0, ymax, 0.1)
 
-  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
+  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16) |> rev()
 
   ggplot(tmp_df) +
     geom_point(aes(x = top10, y = top20, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
