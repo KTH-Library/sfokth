@@ -36,3 +36,12 @@ intervalify <- function(years, width = 3, from_highest = TRUE) {
                             ifelse(maxyear > upper, upper, maxyear))) |>
     select(year, interval)
 }
+
+#' Substitute NA with a text string
+#'
+#' @param x text string that might be NA
+#' @param txt text string to substitute NA with
+#' @export
+recodeNA <- function(x, txt){
+  if_else(is.na(x), txt, x)
+}
