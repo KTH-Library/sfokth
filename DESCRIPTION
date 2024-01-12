@@ -13,4 +13,9 @@ Imports:
     dplyr,
     odbc,
     tidyr,
-    stringr
+    stringr,
+    DBI,
+    ggplot2,
+    ktheme,
+    rlang,
+    scales

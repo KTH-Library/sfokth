@@ -1,10 +1,213 @@
+#' Number of publications by year from DiVA like publication list
+#'
+#' @param data publication list
+#' @param startyear the first publicaiton year to consider
+#' @param stopyear the last publication year to consider
+#' @export
+npubs_diva <- function(data, startyear, stopyear){
+
+  if(missing(startyear))
+    startyear <- suppressWarnings(min(data$Doc_Year, na.rm = TRUE))
+  if(missing(stopyear))
+    stopyear <- suppressWarnings(max(data$Doc_Year, na.rm = TRUE))
+
+  data <- data |>
+    filter(Doc_Year %in% startyear:stopyear) |>
+    mutate(Publication_Year = as.character(Doc_Year),
+           iswos = !is.na(ISI),
+           isscop = !is.na(ScopusId))
+
+  t1 <- data %>%
+    group_by(Publication_Year) %>%
+    summarise(P = n(),
+              P_wos = sum(iswos),
+              P_scop = sum(isscop))
+
+  t2 <-
+    data %>%
+    summarise(P = n(),
+              P_wos = sum(iswos),
+              P_scop = sum(isscop)) |>
+  mutate(Publication_Year = 'Total')
+
+  bind_rows(t1, t2)
+}
+
+#' Indicators by year from Bibstat for DiVA like publication list
+#'
+#' @param con connection to Bibstat
+#' @param data publication list
+#' @param startyear the first publicaiton year to consider
+#' @param stopyear the last publication year to consider
+#' @param cfyear the last publication year to count field normalized citation indicators for
+#' @param n_auth set to a field name with number of unit authors to use fractional counts
+#' @export
+indicators_diva <- function(con, data, startyear, stopyear, cfyear, n_auth = NULL){
+
+  if(missing(startyear))
+    startyear <- suppressWarnings(min(data$Doc_Year, na.rm = TRUE))
+  if(missing(stopyear))
+    stopyear <- suppressWarnings(max(data$Doc_Year, na.rm = TRUE))
+  if(missing(cfyear))
+    cfyear <- stopyear - 1
+
+  UTs <- data |>
+    filter(Doc_Year %in% startyear:stopyear,
+           !is.na(ISI)) |>
+    pull(ISI) |>
+    unique()
+
+  indicators_ut(con, UTs, yearly = TRUE, startyear, stopyear, cfyear, n_auth)
+}
+
+#' Indicators by year or individually from Bibstat for list of UT numbers
+#'
+#' @param con connection to Bibstat
+#' @param uts list of UT numbers
+#' @param yearly set to true to group by year, otherwise individual indicators
+#' @param startyear the first publicaiton year to consider
+#' @param stopyear the last publication year to consider
+#' @param cfyear the last publication year to use field normalized citation indicators
+#' @param n_auth set to a field name with number of unit authors to use fractional counts
+#' @export
+indicators_ut <- function(con, uts, yearly = TRUE, startyear, stopyear, cfyear, n_auth = NULL){
+
+  if(missing(startyear))
+    startyear <- suppressWarnings(min(data$Doc_Year, na.rm = TRUE))
+  if(missing(stopyear))
+    stopyear <- suppressWarnings(max(data$Doc_Year, na.rm = TRUE))
+  if(missing(cfyear))
+    cfyear <- stopyear - 1
+
+  metrics <- con |>
+    tbl("Doc_metrics") |>
+    filter(UT %in% !!uts) |>
+    collect() |>
+    mutate(include_cf = (Doc_type_code_rev %in% c("AR", "RV") & Publication_year <= cfyear),
+           include_jcf = Doc_type_code_rev %in% c("AR", "RV", "ED", "LE"),
+           Publication_year = as.character(Publication_year))
+
+  if(!yearly)
+    return(metrics |>
+             select(UT, Doc_type_code_rev, Publication_year, C_sciwo, C_scxwo, C_sciw3, C_scxw3, C_scxw3_Perc,
+                    FRV_sciwo, FRV_scxwo, FRV_scxw3,
+                    Cf_scxwo, Top25_scxwo, Top10_scxwo, Top5_scxwo, Top1_scxwo, Jcf, Q1, Q2, Q3,
+                    No_authors, No_addresses, No_organizations, No_countries, Subject_category, Subj_weights, include_cf, include_jcf) |>
+             mutate(across(c("Cf_scxwo", "Top25_scxwo", "Top10_scxwo", "Top5_scxwo", "Top1_scxwo"), \(x) if_else(include_cf, x, NA)),
+                    across(c("Jcf", "Q1", "Q2", "Q3"), \(x) if_else(include_jcf, x, NA))))
+
+  if(is.null(n_auth)){
+
+    indics_year <- metrics |>
+      group_by(Publication_year) |>
+      summarise(P = n(),
+                C_self = sum(C_sciwo, na.rm = TRUE),
+                C_noself = sum(C_scxwo, na.rm = TRUE),
+                C_avg = mean(C_scxwo, na.rm = TRUE),
+                P_jcf = sum(include_jcf),
+                Jcf = mean(Jcf[include_jcf], na.rm = TRUE),
+                top20 = sum(Top20[include_jcf], na.rm = TRUE),
+                top20share = mean(Top20[include_jcf], na.rm = TRUE),
+                P_cf = sum(include_cf),
+                Cf = mean(Cf_scxwo[include_cf], na.rm = TRUE),
+                top1 = sum(Top1_scxwo[include_cf], na.rm = TRUE),
+                top1share = mean(Top1_scxwo[include_cf], na.rm = TRUE),
+                top5 = sum(Top5_scxwo[include_cf], na.rm = TRUE),
+                top5share = mean(Top5_scxwo[include_cf], na.rm = TRUE),
+                top10 = sum(Top10_scxwo[include_cf], na.rm = TRUE),
+                top10share = mean(Top10_scxwo[include_cf], na.rm = TRUE),
+                top25 = sum(Top25_scxwo[include_cf], na.rm = TRUE),
+                top25share = mean(Top25_scxwo[include_cf], na.rm = TRUE))
+
+    indics_tot <- metrics |>
+      summarise(P = n(),
+                C_self = sum(C_sciwo, na.rm = TRUE),
+                C_noself = sum(C_scxwo, na.rm = TRUE),
+                C_avg = mean(C_scxwo, na.rm = TRUE),
+                P_jcf = sum(include_jcf),
+                Jcf = mean(Jcf[include_jcf], na.rm = TRUE),
+                top20 = sum(Top20[include_jcf], na.rm = TRUE),
+                top20share = mean(Top20[include_jcf], na.rm = TRUE),
+                P_cf = sum(include_cf),
+                Cf = mean(Cf_scxwo[include_cf], na.rm = TRUE),
+                top1 = sum(Top1_scxwo[include_cf], na.rm = TRUE),
+                top1share = mean(Top1_scxwo[include_cf], na.rm = TRUE),
+                top5 = sum(Top5_scxwo[include_cf], na.rm = TRUE),
+                top5share = mean(Top5_scxwo[include_cf], na.rm = TRUE),
+                top10 = sum(Top10_scxwo[include_cf], na.rm = TRUE),
+                top10share = mean(Top10_scxwo[include_cf], na.rm = TRUE),
+                top25 = sum(Top25_scxwo[include_cf], na.rm = TRUE),
+                top25share = mean(Top25_scxwo[include_cf], na.rm = TRUE)) |>
+      mutate(Publication_year = "Total")
+
+  } else {
+
+    auth <- data |>
+      filter(Doc_Year %in% startyear:stopyear,
+             !is.na(ISI)) |>
+      rename(UT = ISI,
+             n_auth = !!n_auth) |>
+      select(UT, n_auth) |>
+      distinct()
+
+    indics_year <- metrics |>
+      inner_join(auth, by = "UT") |>
+      mutate(w = if_else(n_auth > No_authors, 1, n_auth / No_authors)) |>
+      group_by(Publication_year) |>
+      summarise(P = sum(w),
+                C_self = sum(w * C_sciwo, na.rm = TRUE),
+                C_noself = sum(w * C_scxwo, na.rm = TRUE),
+                C_avg = mean(w * C_scxwo, na.rm = TRUE),
+                P_jcf = sum(w * include_jcf),
+                Jcf = weighted.mean(Jcf[include_jcf], w[include_jcf], na.rm = TRUE),
+                top20 = sum(w[include_jcf] * Top20[include_jcf], na.rm = TRUE),
+                top20share = weighted.mean(Top20[include_jcf], w[include_jcf], na.rm = TRUE),
+                P_cf = sum(w * include_cf),
+                Cf = weighted.mean(Cf_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top1 = sum(w[include_cf] * Top1_scxwo[include_cf], na.rm = TRUE),
+                top1share = weighted.mean(Top1_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top5 = sum(w[include_cf] * Top5_scxwo[include_cf], na.rm = TRUE),
+                top5share = weighted.mean(Top5_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top10 = sum(w[include_cf] * Top10_scxwo[include_cf], na.rm = TRUE),
+                top10share = weighted.mean(Top10_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top25 = sum(w[include_cf] * Top25_scxwo[include_cf], na.rm = TRUE),
+                top25share = weighted.mean(Top25_scxwo[include_cf], w[include_cf], na.rm = TRUE))
+
+    indics_tot <- metrics |>
+      inner_join(auth, by = "UT") |>
+      mutate(w = if_else(n_auth > No_authors, 1, n_auth / No_authors)) |>
+      summarise(P = sum(w),
+                C_self = sum(w * C_sciwo, na.rm = TRUE),
+                C_noself = sum(w * C_scxwo, na.rm = TRUE),
+                C_avg = mean(w * C_scxwo, na.rm = TRUE),
+                P_jcf = sum(w * include_jcf),
+                Jcf = weighted.mean(Jcf[include_jcf], w[include_jcf], na.rm = TRUE),
+                top20 = sum(w[include_jcf] * Top20[include_jcf], na.rm = TRUE),
+                top20share = weighted.mean(Top20[include_jcf], w[include_jcf], na.rm = TRUE),
+                P_cf = sum(w * include_cf),
+                Cf = weighted.mean(Cf_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top1 = sum(w[include_cf] * Top1_scxwo[include_cf], na.rm = TRUE),
+                top1share = weighted.mean(Top1_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top5 = sum(w[include_cf] * Top5_scxwo[include_cf], na.rm = TRUE),
+                top5share = weighted.mean(Top5_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top10 = sum(w[include_cf] * Top10_scxwo[include_cf], na.rm = TRUE),
+                top10share = weighted.mean(Top10_scxwo[include_cf], w[include_cf], na.rm = TRUE),
+                top25 = sum(w[include_cf] * Top25_scxwo[include_cf], na.rm = TRUE),
+                top25share = weighted.mean(Top25_scxwo[include_cf], w[include_cf], na.rm = TRUE)) |>
+      mutate(Publication_year = "Total")
+  }
+
+  bind_rows(indics_year, indics_tot)
+}
+
+
 #' Number of publications by year from masterfile like publication list
 #'
 #' @param data publication list
 #' @param startyear the first publication year to consider
 #' @param stopyear the last publication year to consider
 #' @export
-npubs <- function(data, startyear, stopyear) {
+npubs_master <- function(data, startyear, stopyear) {
 
   Publication_Year <- WebofScience_ID <- ScopusID <- Unit_Fraction <- iswos <- isscop <- NULL
 
@@ -54,9 +257,10 @@ npubs <- function(data, startyear, stopyear) {
 #' @import dplyr
 #' @importFrom stats weighted.mean
 #' @export
-indics_full <- function(data, startyear, stopyear, analysisyear) {
+indics_full_master <- function(data, startyear, stopyear, analysisyear) {
 
-  Publication_Year <- WebofScience_ID <- ScopusID <- iswos <- isscop <-
+  Publication_Year <- Publication_Type_WoS <- WebofScience_ID <-
+    ScopusID <- scop_doctype <- Unit_Fraction <- iswos <- isscop <-
     Citations <- Jtop20 <- Ptop1 <- Ptop10 <- Ptop25 <- cf <- jcf <-
     scop_Jtop20 <- scop_Ptop1 <- scop_Ptop10 <- scop_Ptop25 <-
     scop_cscxo <- scop_fwci_x <- scop_snip <- NULL
@@ -179,9 +383,10 @@ indics_full <- function(data, startyear, stopyear, analysisyear) {
 #' @import dplyr
 #' @importFrom stats weighted.mean
 #' @export
-indics_frac <- function(data, startyear, stopyear, analysisyear) {
+indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
 
-  Publication_Year <- WebofScience_ID <- ScopusID <- Unit_Fraction <- iswos <- isscop <-
+  Publication_Year <- Publication_Type_WoS <- WebofScience_ID <-
+    ScopusID <- scop_doctype <- Unit_Fraction <- iswos <- isscop <-
     Citations <- Jtop20 <- Ptop1 <- Ptop10 <- Ptop25 <- cf <- jcf <-
     scop_Jtop20 <- scop_Ptop1 <- scop_Ptop10 <- scop_Ptop25 <-
     scop_cscxo <- scop_fwci_x <- scop_snip <- NULL
