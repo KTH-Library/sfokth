@@ -2,6 +2,7 @@
 % Please edit documentation in R/package-sfo.R
 \docType{package}
 \name{sfo}
+\alias{-package}
 \alias{sfo}
 \alias{package-svo}
 \title{sfo}

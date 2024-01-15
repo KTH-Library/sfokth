@@ -7,9 +7,8 @@
 indicators_ut(
   con,
   uts,
+  individual = FALSE,
   yearly = TRUE,
-  startyear,
-  stopyear,
   cfyear,
   n_auth = NULL
 )
@@ -19,11 +18,9 @@ indicators_ut(
 
 \item{uts}{list of UT numbers}
 
-\item{yearly}{set to true to group by year, otherwise individual indicators}
+\item{individual}{set to TRUE to get indicators per UT}
 
-\item{startyear}{the first publicaiton year to consider}
-
-\item{stopyear}{the last publication year to consider}
+\item{yearly}{set to TRUE to group by year}
 
 \item{cfyear}{the last publication year to use field normalized citation indicators}
 

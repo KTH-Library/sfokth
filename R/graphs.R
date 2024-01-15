@@ -77,7 +77,7 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
   xmax <- ceiling(max(tmp_df$cf))
   ymax <- ceiling(max(tmp_df$jcf))
 
-  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16) |> rev()
+  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
 
   ggplot(tmp_df) +
     geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
@@ -85,12 +85,12 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
     scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = "red", linewidth = 1) +
-    geom_hline(yintercept = yintercept, color = "red", linewidth = 1) +
+    geom_vline(xintercept = xintercept, color = kth_colors("red"), linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = kth_colors("red"), linewidth = 1) +
     scale_x_continuous(limits = c(0, xmax), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), expand = c(0,0)) +
     theme_light() +
-    theme(legend.position = "right") +
+    theme(legend.position = "bottom") +
     guides(color = guide_legend(override.aes = list(size = 5))) +
     xlab("Cf value") +
     ylab("Jcf value")
@@ -100,29 +100,35 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
 #'
 #' @param df data frame with indicators by site (needs site, p, top10, top20)
 #' @param unfilled vector of sites to draw unfilled circle for (default empty)
-#' @param xintercept where to put a vertical line, default 0.1
-#' @param yintercept where to put a horizontal line, default 0.2
+#' @param xintercept top percentage for publications, default 0.1
+#' @param yintercept top percentage for journals, default 0.2
 #' @param maxsize maximum size of circle (default 50)
 #' @param pal colors to use
 #' @param solid alpha value for circles, 1 = fully solid, 0 = fully transparent
 #' @import ktheme dplyr ggplot2 scales
 #' @export
-top10_top20_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, maxsize = 50, pal = palette_kth_neo(), solid = 0.9) {
+topX_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, maxsize = 50, pal = palette_kth_neo(), solid = 0.9) {
 
   names(pal) <- NULL
+
+  topxname <- paste0("top", round(100*xintercept), "share")
+  topyname <- paste0("top", round(100*yintercept), "share")
+
   tmp_df <- df |>
-    mutate(size = maxsize * sqrt(p/max(p)))
+    mutate(size = maxsize * sqrt(p/max(p))) |>
+    rename(topx = all_of(topxname),
+           topy = all_of(topyname))
 
   minsize <- min(tmp_df$size)
-  xmax <- ceiling(10*max(tmp_df$top10))/10
-  ymax <- ceiling(10*max(tmp_df$top20))/10
+  xmax <- ceiling(10*max(tmp_df$topx))/10
+  ymax <- ceiling(10*max(tmp_df$topy))/10
   xbreaks <- seq(0, xmax, 0.1)
   ybreaks <- seq(0, ymax, 0.1)
 
-  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16) |> rev()
+  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
 
   ggplot(tmp_df) +
-    geom_point(aes(x = top10, y = top20, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
+    geom_point(aes(x = topx, y = topy, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
     scale_color_manual(values = pal) +
     scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
@@ -132,8 +138,8 @@ top10_top20_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 
     scale_x_continuous(limits = c(0, xmax), breaks = xbreaks, labels = percent_format(), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), breaks = ybreaks, labels = percent_format(), expand = c(0,0)) +
     theme_light() +
-    theme(legend.position = "right") +
+    theme(legend.position = "bottom") +
     guides(color = guide_legend(override.aes = list(size = 5))) +
-    xlab("Share Top10% publications") +
-    ylab("Share publications in Top20% journals")
+    xlab(paste0("Share Top", round(100*xintercept) , "% publications")) +
+    ylab(paste0("Share publications in Top", round(100*yintercept), "% journals"))
 }
