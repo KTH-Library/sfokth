@@ -10,4 +10,4 @@ globalVariables(
     "include_cf", "include_jcf", "isscop", "iswos", "w", "startyear", "stopyear", "topx", "topy",
     "Country_name", "Diva_dep_id_new", "Diva_school_id_new", "Name_eng", "Org_type_code", "Unified_org_id",
     "aff_industry", "aff_inter", "aff_other", "affs_sfo", "affs_sweden", "dep_collab", "n_deps", "n_schools",
-    "quantile", "sfo_collab", "swe_collab"))
+    "quantile", "sfo_collab", "swe_collab", "target"))
