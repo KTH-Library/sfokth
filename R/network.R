@@ -255,7 +255,7 @@ labelify_edges <- function(network) {
   nodes <- network$nodes
   edges <- network$edges
 
-  edges |>
+  edges <- edges |>
     inner_join(nodes |> select(id, label), by = c("source" = "id")) |>
     inner_join(nodes |> select(id, label), by = c("target" = "id")) |>
     relocate(source, target, label.x, label.y)
