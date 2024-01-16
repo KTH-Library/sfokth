@@ -140,3 +140,24 @@ network_gephi <- function(pubs,
 
   list(nodes = nodes, edges = edges)
 }
+
+#' Add edge labels from node labels in Gephiesque network
+#'
+#' @param network a named list(nodes, edges)
+#' @import dplyr
+#' @returns a named list(nodes, edges)
+#' @export
+labelify_edges <- function(network) {
+
+  nodes <- network$nodes
+  edges <- network$edges
+
+  edges <- edges |>
+    inner_join(nodes, by = c("source" = "id")) |>
+    inner_join(nodes, by = c("target" = "id")) |>
+    select(source, target, label.x, label.y) |>
+    inner_join(edges, by = c("source", "target")) |>
+    relocate(source, target, label.x, label.y)
+
+  list(nodes, edges)
+}
