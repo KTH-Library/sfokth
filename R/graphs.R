@@ -9,7 +9,6 @@
 #' @export
 graph_by_year <- function(df, graphvar, timevar = "Publication_Year", horizontal = NULL, perc = FALSE) {
 
-
   kth_cols <- palette_kth(4)
 
   graphdf <- data.frame(df[, timevar], df[, graphvar]) |>

@@ -1,6 +1,8 @@
 # sfokth
 
-sfokth is an R package aimed at bibliometric analysis of SFO:s (strategiska forskingsområden) at KTH. Since access to the KTH bibliometric database is required, it is unlikely to be useful for anyone outside the KTH Library.
+sfokth is an R package aimed at bibliometric analysis of SFO:s (strategiska forskingsområden) at KTH.
+
+Functions for extraction of DiVA data and for most of the graphs should work for everyone. For most bibliometric results, access to the KTH bibliometric database is required.
 
 ## Installation
 
