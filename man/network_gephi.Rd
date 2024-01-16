@@ -9,7 +9,7 @@ network_gephi(
   pub_id = "UT",
   label1 = "Name_eng",
   label2 = NULL,
-  indicator = NULL
+  indicators = NULL
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ network_gephi(
 
 \item{label2}{(optional) a second column name to use for node labels}
 
-\item{indicator}{(optional) a column name to calculate averages per node for}
+\item{indicators}{(optional) a list of column names to calculate averages per node/edge for}
 }
 \description{
 Network nodes and edges in Gephi friendly format
