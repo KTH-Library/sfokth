@@ -9,7 +9,8 @@ graph_by_year(
   graphvar,
   timevar = "Publication_Year",
   horizontal = NULL,
-  perc = FALSE
+  perc = FALSE,
+  cols = unname(palette_kth_neo()[c(1, 5)])
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ graph_by_year(
 \item{horizontal}{where to put a horizontal line, default NULL}
 
 \item{perc}{set to TRUE for percent scale y axis, default FALSE}
+
+\item{cols}{colors to use for curve and horizontal line}
 }
 \description{
 Graph indicator by time
