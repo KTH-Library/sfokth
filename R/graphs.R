@@ -104,7 +104,7 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
 #' Plots one circle for each site, with size proportional to number of publications
 #' and X/Y coordinates according to top indicators.
 #'
-#' Incoming data frame needs one column \code{site} and two columns \code{topX} and \code{topY}
+#' Incoming data frame needs columns \code{site}, \code{p}, \code{topX} and \code{topY}
 #' where \code{X = 100 * xintercept} and \code{Y = 100 * yintercept}.
 #'
 #' @param df data frame with indicators by site
@@ -151,4 +151,76 @@ topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, m
     guides(color = guide_legend(override.aes = list(size = 5))) +
     xlab(paste0("Share Top", round(100*xintercept) , "% publications")) +
     ylab(paste0("Share publications in Top", round(100*yintercept), "% journals"))
+}
+
+#' Boxplot per year for some indicator with optional reference line
+#'
+#' @param data a data frame including columns for year and indicator value
+#' @param year the column holding years, default Publication_Year
+#' @param indicator the indicator to make boxplots for
+#' @param ylabel a label for the y axis, default indicator
+#' @param horizontal height of optional reference line
+#' @param perc set to TRUE for percent y scale
+#' @import dplyr ggplot2 scales
+#' @export
+years_boxplot <- function(data,
+                          year = "Publication_Year",
+                          indicator,
+                          ylabel = NULL,
+                          horizontal = NULL,
+                          perc = FALSE) {
+
+  if(is.null(ylabel))
+    ylabel = indicator
+
+  data <- data |>
+    rename(year = !!year,
+           value = !!indicator) |>
+    filter(!is.na(value))
+
+  ymax <- max(2 * coalesce(horizontal, 0),
+              ceiling(10 * max(data$value)) / 10)
+
+  gg <- ggplot(data,
+         aes(x = year,
+             y = value)) +
+    geom_boxplot() +
+    stat_summary(fun = mean,
+                 geom = "point",
+                 shape = 23,
+                 size = 4) +
+    theme_classic() +
+    xlab("Publication Year") +
+    ylab(ylabel)
+
+  if(!is.null(horizontal))
+    gg <- gg + geom_hline(yintercept = horizontal, color = "red")
+
+  if(perc){
+    gg <- gg + scale_y_continuous(labels = percent_format(accuracy = 5L), limits = c(0, ymax))
+  } else {
+    gg <- gg + ylim(0, ymax)
+  }
+
+  gg
+}
+
+#' Plot boxplots per year for bootstrap samples
+#'
+#' @param samples a matrix with samples, one named column for each year
+#' @param ylabel a name for the indicator to use as label
+#' @import tidyr dplyr
+#' @export
+bootstrap_graph <- function(samples, ylabel) {
+
+  data <- samples |>
+    as.data.frame() |>
+    pivot_longer(cols = everything())
+
+  years_boxplot(data,
+                year = "name",
+                indicator = "value",
+                ylabel = ylabel,
+                horizontal = 1,
+                perc = FALSE)
 }

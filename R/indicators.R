@@ -87,11 +87,14 @@ indicators_ut <- function(con, uts, individual = FALSE, yearly = TRUE, cfyear, n
       select(UT, Doc_type_code_rev, Publication_year, C_sciwo, C_scxwo, C_sciw3, C_scxw3, C_scxw3_Perc,
              FRV_sciwo, FRV_scxwo, FRV_scxw3,
              Cf_scxwo, Top25_scxwo, Top10_scxwo, Top5_scxwo, Top1_scxwo, Jcf, Top20, Q1, Q2, Q3,
-             No_authors, No_addresses, No_organizations, No_countries, Subject_category, Subj_weights, include_cf, include_jcf) |>
+             No_authors, No_addresses, No_organizations, No_countries, Subject_category, Subj_weights,
+             include_cf, include_jcf) |>
       mutate(across(c("Cf_scxwo", "Top25_scxwo", "Top10_scxwo", "Top5_scxwo", "Top1_scxwo"), \(x) if_else(include_cf, x, NA)),
              across(c("Jcf", "Top20", "Q1", "Q2", "Q3"), \(x) if_else(include_jcf, x, NA)))
+
   } else {
-    if(is.null(n_auth)){
+
+    if(is.null(n_auth)) {
 
       indics_year <- if(yearly) {
         metrics |>
@@ -399,7 +402,6 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
   if(missing(analysisyear)) {
     analysisyear <- as.integer(format(Sys.Date(), "%Y"))
   }
-
 
   wos <- data %>%
     filter(Publication_Year %in% startyear:stopyear,

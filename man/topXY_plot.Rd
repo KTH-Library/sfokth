@@ -34,6 +34,6 @@ Plots one circle for each site, with size proportional to number of publications
 and X/Y coordinates according to top indicators.
 }
 \details{
-Incoming data frame needs one column \code{site} and two columns \code{topX} and \code{topY}
+Incoming data frame needs columns \code{site}, \code{p}, \code{topX} and \code{topY}
 where \code{X = 100 * xintercept} and \code{Y = 100 * yintercept}.
 }

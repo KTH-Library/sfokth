@@ -9,7 +9,7 @@ bootstrap(x, samples = 1000)
 \arguments{
 \item{x}{a vector with the sample to bootstrap over}
 
-\item{samples}{the number of samples to use, default 1000}
+\item{samples}{the number of samples to generate, default 1000}
 }
 \value{
 a vector of sample means
