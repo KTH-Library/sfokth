@@ -129,8 +129,8 @@ topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, m
            topy = all_of(topyname))
 
   minsize <- min(tmp_df$size)
-  xmax <- ceiling(10*max(tmp_df$topx))/10
-  ymax <- ceiling(10*max(tmp_df$topy))/10
+  xmax <- ceiling(10*max(tmp_df$topx) + 1)/10
+  ymax <- ceiling(10*max(tmp_df$topy) + 1)/10
   xbreaks <- seq(0, xmax, 0.1)
   ybreaks <- seq(0, ymax, 0.1)
 
@@ -142,8 +142,8 @@ topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, m
     scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, pal[4], linewidth = 1) +
-    geom_hline(yintercept = yintercept, pal[4], linewidth = 1) +
+    geom_vline(xintercept = xintercept, color = pal[4], linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = pal[4], linewidth = 1) +
     scale_x_continuous(limits = c(0, xmax), breaks = xbreaks, labels = percent_format(), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), breaks = ybreaks, labels = percent_format(), expand = c(0,0)) +
     theme_light() +

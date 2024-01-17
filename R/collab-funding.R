@@ -119,3 +119,27 @@ collaboration_perf_other <- function(data) {
               other_share = mean(aff_other, na.rm = TRUE),
               .groups = "drop")
 }
+
+#' Get fundings per publication
+#'
+#' @param con connection to Bibmet
+#' @param uts list of UT numbers
+#' @import dplyr
+#' @returns tibble
+#' @export
+fundings_ut <- function(con, uts) {
+
+  doc <- con |>
+    tbl("Document") |>
+    filter(UT %in% !!uts)
+
+  fundings <- con |>
+    tbl("Funding_grant")
+
+  doc |>
+    inner_join(fundings, by = "Doc_id") |>
+    filter(is.na(Grant_agency_pref)) |>
+    select(UT, No_grants, Grant_agency) |>
+    distinct() |>
+    collect()
+}
