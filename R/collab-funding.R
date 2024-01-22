@@ -110,7 +110,7 @@ collaboration_perf_other <- function(data) {
     group_by(site) |>
     summarise(p = n(),
               industry = sum(aff_industry, na.rm = TRUE),
-              inter_share = mean(aff_industry, na.rm = TRUE),
+              industry_share = mean(aff_industry, na.rm = TRUE),
               jcf = mean(Jcf[include_jcf & aff_industry], na.rm = TRUE),
               top20 = mean(Top20[include_jcf & aff_industry], na.rm = TRUE),
               cf = mean(Cf_scxwo[include_cf & aff_industry], na.rm = TRUE),
@@ -138,8 +138,34 @@ fundings_ut <- function(con, uts) {
 
   doc |>
     inner_join(fundings, by = "Doc_id") |>
-    filter(is.na(Grant_agency_pref)) |>
     select(UT, No_grants, Grant_agency) |>
     distinct() |>
     collect()
+}
+
+#' Wash funder strings according to rules
+#'
+#' NOTE: At the moment only full string rules are applied!
+#' ToDo:
+#' - Apply all rule types
+#' - Document principles of \code{rules}
+#'
+#' @param indata a data frame with at least a Grant_agency field
+#' @param rules a set of rules to implement
+#' @import dplyr
+#' @returns tibble
+#' @export
+fundings_wash <- function(indata, rules) {
+
+  rules_full <- rules |>
+    filter(full_field == 1) |>
+    mutate(matchfield = tolower(match_string1))
+
+  indata |>
+    filter(coalesce(Grant_agency, "") != "") |>
+    mutate(matchfield = tolower(Grant_agency)) |>
+    left_join(rules_full, by = "matchfield", relationship = "many-to-many") |>
+    rename(funder_washed = Funder_name_en) |>
+    select(names(indata), funder_washed) |>
+    distinct()
 }
