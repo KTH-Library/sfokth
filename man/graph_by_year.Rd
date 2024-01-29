@@ -10,7 +10,8 @@ graph_by_year(
   timevar = "Publication_Year",
   horizontal = NULL,
   perc = FALSE,
-  cols = unname(palette_kth_neo()[c(1, 5)])
+  graphcol = kth_colors("blue"),
+  horizontal_col = kth_colors("lightteal")
 )
 }
 \arguments{
@@ -24,7 +25,9 @@ graph_by_year(
 
 \item{perc}{set to TRUE for percent scale y axis, default FALSE}
 
-\item{cols}{colors to use for curve and horizontal line}
+\item{graphcol}{color to use for curve}
+
+\item{horizontal_col}{color to use for horizontal line}
 }
 \description{
 Graph indicator by time

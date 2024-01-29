@@ -11,7 +11,8 @@ topXY_plot(
   yintercept = 0.2,
   maxsize = 50,
   pal = palette_kth_neo(),
-  solid = 0.9
+  solid = 0.9,
+  linecol = kth_colors("red")
 )
 }
 \arguments{
@@ -25,9 +26,11 @@ topXY_plot(
 
 \item{maxsize}{maximum size of circle (default 50)}
 
-\item{pal}{colors to use}
+\item{pal}{colors to use for circles}
 
 \item{solid}{alpha value for circles, 1 = fully solid, 0 = fully transparent}
+
+\item{linecol}{color for horizontal/vertical lines}
 }
 \description{
 Plots one circle for each site, with size proportional to number of publications

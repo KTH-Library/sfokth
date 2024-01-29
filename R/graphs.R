@@ -5,7 +5,8 @@
 #' @param timevar name of column with time, default Publication_Year
 #' @param horizontal where to put a horizontal line, default NULL
 #' @param perc set to TRUE for percent scale y axis, default FALSE
-#' @param cols colors to use for curve and horizontal line
+#' @param graphcol color to use for curve
+#' @param horizontal_col color to use for horizontal line
 #' @import ktheme dplyr ggplot2 scales
 #' @export
 graph_by_year <- function(df,
@@ -13,10 +14,10 @@ graph_by_year <- function(df,
                           timevar = "Publication_Year",
                           horizontal = NULL,
                           perc = FALSE,
-                          cols = unname(palette_kth_neo()[c(1, 5)])) {
+                          graphcol = kth_colors("blue"),
+                          horizontal_col = kth_colors("lightteal")) {
 
-  graphdf <- data.frame(df[, timevar], df[, graphvar]) |>
-    rename(xvar = timevar, yvar = graphvar) |>
+  graphdf <- data.frame(xvar = df[, timevar], yvar = df[, graphvar]) |>
     filter(xvar != "Total", !is.na(yvar)) |>
     mutate(xvar = as.integer(xvar))
 
@@ -37,8 +38,8 @@ graph_by_year <- function(df,
 
   gg <- ggplot(data = graphdf,
          aes(x = xvar, y = yvar, group = 1)) +
-    geom_point(color = cols[1]) +
-    geom_line(color = cols[1], linetype = "dashed") +
+    geom_point(color = graphcol) +
+    geom_line(color = graphcol, linetype = "dashed") +
     xlab(timevar) +
     ylab(graphvar) +
     theme_kth_neo() +
@@ -48,7 +49,7 @@ graph_by_year <- function(df,
     scale_x_continuous(breaks = breaks, labels = breaks, minor_breaks = NULL)
 
   if(!is.null(horizontal)){
-    gg <- gg + geom_hline(yintercept = horizontal, color = cols[2])
+    gg <- gg + geom_hline(yintercept = horizontal, color = horizontal_col)
   }
   if(perc){
     gg <- gg + scale_y_continuous(labels = percent_format(accuracy = 5L), limits = c(0, ymax))
@@ -66,15 +67,17 @@ graph_by_year <- function(df,
 #' @param xintercept where to put a vertical line, default 1
 #' @param yintercept where to put a horizontal line, default 1
 #' @param maxsize maximum size of circle (default 50)
-#' @param pal colors to use
+#' @param pal colors to use for circles
 #' @param solid alpha value for circles, 1 = fully solid, 0 = fully transparent
+#' @param linecol color for horizontal/vertical lines
 #' @import ktheme dplyr ggplot2 scales
 #' @export
-cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxsize = 50, pal = palette_kth_neo(), solid = 0.9) {
+cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxsize = 50, pal = palette_kth_neo(), solid = 0.9, linecol = kth_colors("red")) {
 
   names(pal) <- NULL
   tmp_df <- df |>
-    mutate(size = maxsize * sqrt(p/max(p)))
+    mutate(size = maxsize * sqrt(p/max(p))) |>
+    arrange(site)
 
   minsize <- min(tmp_df$size)
   xmax <- ceiling(max(tmp_df$cf))
@@ -88,8 +91,8 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
     scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = pal[4], linewidth = 1) +
-    geom_hline(yintercept = yintercept, color = pal[4], linewidth = 1) +
+    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
     scale_x_continuous(limits = c(0, xmax), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), expand = c(0,0)) +
     theme_light() +
@@ -112,11 +115,12 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
 #' @param xintercept top percentage for publications, default 0.1
 #' @param yintercept top percentage for journals, default 0.2
 #' @param maxsize maximum size of circle (default 50)
-#' @param pal colors to use
+#' @param pal colors to use for circles
 #' @param solid alpha value for circles, 1 = fully solid, 0 = fully transparent
+#' @param linecol color for horizontal/vertical lines
 #' @import ktheme dplyr ggplot2 scales
 #' @export
-topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, maxsize = 50, pal = palette_kth_neo(), solid = 0.9) {
+topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, maxsize = 50, pal = palette_kth_neo(), solid = 0.9, linecol = kth_colors("red")) {
 
   names(pal) <- NULL
 
@@ -126,13 +130,14 @@ topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, m
   tmp_df <- df |>
     mutate(size = maxsize * sqrt(p/max(p))) |>
     rename(topx = all_of(topxname),
-           topy = all_of(topyname))
+           topy = all_of(topyname)) |>
+    arrange(site)
 
   minsize <- min(tmp_df$size)
-  xmax <- ceiling(10*max(tmp_df$topx) + 1)/10
-  ymax <- ceiling(10*max(tmp_df$topy) + 1)/10
-  xbreaks <- seq(0, xmax, 0.1)
-  ybreaks <- seq(0, ymax, 0.1)
+  xmax <- max(2*xintercept, ceiling(10*max(tmp_df$topx))/10)
+  ymax <- max(2*yintercept, ceiling(10*max(tmp_df$topy))/10)
+  xbreaks <- seq(0, xmax, if_else(yintercept < .1, .05, 0.1))
+  ybreaks <- seq(0, ymax, if_else(xintercept < .1, .05, 0.1))
 
   shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
 
@@ -142,8 +147,8 @@ topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, m
     scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = pal[4], linewidth = 1) +
-    geom_hline(yintercept = yintercept, color = pal[4], linewidth = 1) +
+    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
     scale_x_continuous(limits = c(0, xmax), breaks = xbreaks, labels = percent_format(), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), breaks = ybreaks, labels = percent_format(), expand = c(0,0)) +
     theme_light() +
