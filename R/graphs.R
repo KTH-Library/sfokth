@@ -60,6 +60,84 @@ graph_by_year <- function(df,
   gg
 }
 
+#' Plot indicators X and Y by site with circles proportional to the number of publications
+#'
+#' @param df data frame with indicators by site (needs site, p, cf, jcf)
+#' @param xintercept where to put a vertical line
+#' @param yintercept where to put a horizontal line
+#' @param xvar the name of the variable to be plotted on the X axis
+#' @param yvar the name of the variable to be plotted on the Y axis
+#' @param xlab the label for the X axis (same as xvar is not given)
+#' @param ylab the label for the Y axis (same as yvar is not given)
+#' @param sitevar the name of the circle label variable, default "site"
+#' @param sizevar the name of the size variable, defailt "p"
+#' @param percentage set to TRUE for percentage scales
+#' @param unfilled vector of sites to draw unfilled circle for, default empty
+#' @param maxsize maximum size of circle (default 30)
+#' @param pal colors to use for circles
+#' @param solid alpha value for circles, 1 = fully solid, 0 = fully transparent
+#' @param linecol color for horizontal/vertical lines
+#' @import ktheme dplyr ggplot2 scales
+#' @export
+xy_plot <- function(df,
+                    xintercept,
+                    yintercept,
+                    xvar,
+                    yvar,
+                    xlab,
+                    ylab,
+                    sitevar = "site",
+                    sizevar = "p",
+                    percentage = FALSE,
+                    unfilled = c(),
+                    maxsize = 30,
+                    pal = palette_kth_neo(18),
+                    solid = 0.9,
+                    linecol = kth_colors("red")) {
+
+  if(missing(xlab))
+    xlab <- xvar
+  if(missing(ylab))
+    ylab <- yvar
+
+  names(pal) <- NULL
+
+  tmp_df <- df |>
+    rename(x = !!xvar,
+           y = !!yvar,
+           site = !!sitevar,
+           size = !!sizevar) |>
+    mutate(size = maxsize * sqrt(size/max(size))) |>
+    arrange(site)
+
+  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
+
+  minsize <- min(tmp_df$size)
+  xmax <- max(2*xintercept, if_else(percentage, ceiling(10*max(tmp_df$x))/10, ceiling(max(tmp_df$x))))
+  ymax <- max(2*yintercept, if_else(percentage, ceiling(10*max(tmp_df$y))/10, ceiling(max(tmp_df$y))))
+
+  xbreaks <-  seq(0, xmax, ifelse(percentage, 0.1, 0.5))
+  ybreaks <-  seq(0, ymax, ifelse(percentage, 0.1, 0.5))
+
+  ggplot(tmp_df) +
+    geom_point(aes(x = x, y = y, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
+    scale_color_manual(values = pal) +
+    scale_shape_manual(values = shapevals)  +
+    scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
+    scale_alpha_identity(guide = "none") +
+    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
+    scale_x_continuous(limits = c(0, xmax), breaks = xbreaks,
+                       labels = ifelse(percentage, percent_format(), number_format()), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0, ymax), breaks = ybreaks,
+                       labels = ifelse(percentage, percent_format(), number_format()), expand = c(0,0)) +
+    theme_light() +
+    theme(legend.position = "bottom") +
+    guides(color = guide_legend(override.aes = list(size = 5))) +
+    xlab(xlab) +
+    ylab(ylab)
+}
+
 #' Plot cf and jcf by site with circles proportional to number of publications
 #'
 #' @param df data frame with indicators by site (needs site, p, cf, jcf)
@@ -74,32 +152,21 @@ graph_by_year <- function(df,
 #' @export
 cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxsize = 50, pal = palette_kth_neo(), solid = 0.9, linecol = kth_colors("red")) {
 
-  names(pal) <- NULL
-  tmp_df <- df |>
-    mutate(size = maxsize * sqrt(p/max(p))) |>
-    arrange(site)
-
-  minsize <- min(tmp_df$size)
-  xmax <- ceiling(max(tmp_df$cf))
-  ymax <- ceiling(max(tmp_df$jcf))
-
-  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
-
-  ggplot(tmp_df) +
-    geom_point(aes(x = cf, y = jcf, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
-    scale_color_manual(values = pal) +
-    scale_shape_manual(values = shapevals)  +
-    scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
-    scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
-    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
-    scale_x_continuous(limits = c(0, xmax), expand = c(0,0)) +
-    scale_y_continuous(limits = c(0, ymax), expand = c(0,0)) +
-    theme_light() +
-    theme(legend.position = "bottom") +
-    guides(color = guide_legend(override.aes = list(size = 5))) +
-    xlab("Cf value") +
-    ylab("Jcf value")
+  xy_plot(df,
+          xintercept,
+          yintercept,
+          xvar = 'cf',
+          yvar = 'jcf',
+          xlab = 'Cf value',
+          ylab = 'Jcf value',
+          sitevar = 'site',
+          sizevar = 'p',
+          percentage = FALSE,
+          unfilled,
+          maxsize,
+          pal,
+          solid,
+          linecol)
 }
 
 #' Plot two top indicators by site
@@ -122,40 +189,21 @@ cf_jcf_plot <- function(df, unfilled = c(), xintercept = 1, yintercept = 1, maxs
 #' @export
 topXY_plot <- function(df, unfilled = c(), xintercept = 0.1, yintercept = 0.2, maxsize = 50, pal = palette_kth_neo(), solid = 0.9, linecol = kth_colors("red")) {
 
-  names(pal) <- NULL
-
-  topxname <- paste0("top", round(100*xintercept), "share")
-  topyname <- paste0("top", round(100*yintercept), "share")
-
-  tmp_df <- df |>
-    mutate(size = maxsize * sqrt(p/max(p))) |>
-    rename(topx = all_of(topxname),
-           topy = all_of(topyname)) |>
-    arrange(site)
-
-  minsize <- min(tmp_df$size)
-  xmax <- max(2*xintercept, ceiling(10*max(tmp_df$topx))/10)
-  ymax <- max(2*yintercept, ceiling(10*max(tmp_df$topy))/10)
-  xbreaks <- seq(0, xmax, if_else(yintercept < .1, .05, 0.1))
-  ybreaks <- seq(0, ymax, if_else(xintercept < .1, .05, 0.1))
-
-  shapevals <- if_else(tmp_df$site %in% unfilled, 1, 16)
-
-  ggplot(tmp_df) +
-    geom_point(aes(x = topx, y = topy, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
-    scale_color_manual(values = pal) +
-    scale_shape_manual(values = shapevals)  +
-    scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
-    scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
-    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
-    scale_x_continuous(limits = c(0, xmax), breaks = xbreaks, labels = percent_format(), expand = c(0,0)) +
-    scale_y_continuous(limits = c(0, ymax), breaks = ybreaks, labels = percent_format(), expand = c(0,0)) +
-    theme_light() +
-    theme(legend.position = "bottom") +
-    guides(color = guide_legend(override.aes = list(size = 5))) +
-    xlab(paste0("Share Top", round(100*xintercept) , "% publications")) +
-    ylab(paste0("Share publications in Top", round(100*yintercept), "% journals"))
+  xy_plot(df,
+          xintercept,
+          yintercept,
+          xvar = paste0("top", round(100*xintercept), "share"),
+          yvar = paste0("top", round(100*yintercept), "share"),
+          xlab = paste0("Share Top", round(100*xintercept) , "% publications"),
+          ylab = paste0("Share publications in Top", round(100*yintercept), "% journals"),
+          sitevar = 'site',
+          sizevar = 'p',
+          percentage = TRUE,
+          unfilled,
+          maxsize,
+          pal,
+          solid,
+          linecol)
 }
 
 #' Boxplot per year for some indicator with optional reference line
