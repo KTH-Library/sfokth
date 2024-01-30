@@ -120,13 +120,13 @@ xy_plot <- function(df,
   ybreaks <-  seq(0, ymax, ifelse(percentage, 0.1, 0.5))
 
   ggplot(tmp_df) +
+    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
     geom_point(aes(x = x, y = y, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
     scale_color_manual(values = pal) +
     scale_shape_manual(values = shapevals)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
-    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
-    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
     scale_x_continuous(limits = c(0, xmax), breaks = xbreaks,
                        labels = ifelse(percentage, percent_format(), number_format()), expand = c(0,0)) +
     scale_y_continuous(limits = c(0, ymax), breaks = ybreaks,
