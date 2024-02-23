@@ -53,22 +53,18 @@ recodeNA <- function(x, txt){
 #' @param group the field to group by
 #' @param id the field to find the most common of
 #' @import dplyr
-#' @importFrom stats setNames
 #' @export
 get_most_common <- function(data, group, id) {
 
-  grp <- r <- NULL
+  r <- NULL
 
   data |>
-    rename(grp = !!group,
-           id = !!id) |>
-    group_by(grp, id) |>
+    group_by({{group}}, {{id}}) |>
     summarise(n = n(),
               .groups = "drop") |>
-    group_by(grp) |>
+    group_by({{group}}) |>
     mutate(r = rank(desc(n), ties.method = "first")) |>
     ungroup() |>
     filter(r == 1) |>
-    select(grp, id) |>
-    setNames(c(group, id))
+    select({{group}}, {{id}})
 }
