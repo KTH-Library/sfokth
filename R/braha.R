@@ -45,3 +45,30 @@ intervalify <- function(years, width = 3, from_highest = TRUE) {
 recodeNA <- function(x, txt){
   if_else(is.na(x), txt, x)
 }
+
+#' Get the most common identificator for a group
+#' (for example the most common issn for a journal)
+#'
+#' @param data the data to use
+#' @param group the field to group by
+#' @param id the field to find the most common of
+#' @import dplyr
+#' @importFrom stats setNames
+#' @export
+get_most_common <- function(data, group, id) {
+
+  grp <- r <- NULL
+
+  data |>
+    rename(grp = !!group,
+           id = !!id) |>
+    group_by(grp, id) |>
+    summarise(n = n(),
+              .groups = "drop") |>
+    group_by(grp) |>
+    mutate(r = rank(desc(n), ties.method = "first")) |>
+    ungroup() |>
+    filter(r == 1) |>
+    select(grp, id) |>
+    setNames(c(group, id))
+}
