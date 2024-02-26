@@ -4,19 +4,14 @@
 \alias{bootstrap_by_year}
 \title{Bootstrap by publication year}
 \usage{
-bootstrap_by_year(
-  data,
-  indicator,
-  yearcolumn = "Publication_Year",
-  samples = 1000
-)
+bootstrap_by_year(data, indicator, year = Publication_year, samples = 1000)
 }
 \arguments{
 \item{data}{a data frame including a year column and an indicator column}
 
-\item{indicator}{a string, the name of the indicator column}
+\item{indicator}{the indicator column}
 
-\item{yearcolumn}{a string, the name of the year column (default "Publication_Year")}
+\item{year}{the year column (default "Publication_Year")}
 
 \item{samples}{the number of samples to generate per year, default 1000}
 }
