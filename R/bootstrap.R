@@ -17,29 +17,24 @@ bootstrap <- function(x, samples = 1000) {
 #' and keep the resulting samples in a data frame with one column per year
 #'
 #' @param data a data frame including a year column and an indicator column
-#' @param indicator a string, the name of the indicator column
-#' @param yearcolumn a string, the name of the year column (default "Publication_Year")
+#' @param indicator the indicator column
+#' @param year the year column (default "Publication_Year")
 #' @param samples the number of samples to generate per year, default 1000
 #' @import dplyr
 #' @export
 bootstrap_by_year <- function(data,
                               indicator,
-                              yearcolumn = "Publication_Year",
+                              year = Publication_year,
                               samples = 1000) {
 
-  data <- data |>
-    rename(year = !!yearcolumn,
-           indic = !!indicator) |>
-    filter(!is.na(indic))
-
-  firstyear = min(data$year)
-  lastyear = max(data$year)
+  firstyear = min(data |> pull({{year}}))
+  lastyear = max(data |> pull({{year}}))
 
   sapply(as.character(firstyear:lastyear),
          function(y) {
            values <- data  |>
-             filter(year == y) |>
-             pull(indic)
+             filter({{year}} == y) |>
+             pull({{indicator}})
            bootstrap(values, samples)
          },
          USE.NAMES = TRUE) |> as.data.frame()

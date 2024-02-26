@@ -17,14 +17,14 @@ npubs_diva <- function(data, startyear, stopyear){
            iswos = !is.na(ISI),
            isscop = !is.na(ScopusId))
 
-  t1 <- data %>%
-    group_by(Publication_Year) %>%
+  t1 <- data |>
+    group_by(Publication_Year) |>
     summarise(P = n(),
               P_wos = sum(iswos),
               P_scop = sum(isscop))
 
   t2 <-
-    data %>%
+    data |>
     summarise(P = n(),
               P_wos = sum(iswos),
               P_scop = sum(isscop)) |>
@@ -220,14 +220,14 @@ npubs_master <- function(data, startyear, stopyear) {
     stopyear <- suppressWarnings(max(data$Publication_Year, na.rm = TRUE))
   }
 
-  data <- data %>%
-    filter(Publication_Year %in% startyear:stopyear) %>%
+  data <- data |>
+    filter(Publication_Year %in% startyear:stopyear) |>
     mutate(Publication_Year = as.character(Publication_Year),
            iswos = !is.na(WebofScience_ID),
            isscop = !is.na(ScopusID))
 
-  t1 <- data %>%
-    group_by(Publication_Year) %>%
+  t1 <- data |>
+    group_by(Publication_Year) |>
     summarise(P_full = n(),
               P_frac = sum(Unit_Fraction),
               P_wos_full = sum(iswos),
@@ -236,13 +236,13 @@ npubs_master <- function(data, startyear, stopyear) {
               P_scop_frac = sum(isscop*Unit_Fraction))
 
   t2 <-
-    data %>%
+    data |>
     summarise(P_full = n(),
               P_frac = sum(Unit_Fraction),
               P_wos_full = sum(iswos),
               P_wos_frac = sum(iswos*Unit_Fraction),
               P_scop_full = sum(isscop),
-              P_scop_frac = sum(isscop*Unit_Fraction)) %>%
+              P_scop_frac = sum(isscop*Unit_Fraction)) |>
     mutate(Publication_Year = 'Total')
 
   bind_rows(t1, t2)
@@ -277,9 +277,9 @@ indics_full_master <- function(data, startyear, stopyear, analysisyear) {
     analysisyear <- as.integer(format(Sys.Date(), "%Y"))
   }
 
-  wos <- data %>%
+  wos <- data |>
     filter(Publication_Year %in% startyear:stopyear,
-           Publication_Type_WoS %in% c("Article", "Review")) %>%
+           Publication_Type_WoS %in% c("Article", "Review")) |>
     mutate(Publication_Year = as.character(Publication_Year),
            iswos = !is.na(WebofScience_ID),
            cf = if_else(Publication_Year < analysisyear - 2, cf, NA_real_),
@@ -288,9 +288,9 @@ indics_full_master <- function(data, startyear, stopyear, analysisyear) {
            Ptop25 = if_else(Publication_Year < analysisyear - 2, Ptop25, NA_real_)
     )
 
-  scop <- data %>%
+  scop <- data |>
     filter(Publication_Year %in% startyear:stopyear,
-           scop_doctype %in% c("Article", "Review")) %>%
+           scop_doctype %in% c("Article", "Review")) |>
     mutate(Publication_Year = as.character(Publication_Year),
            isscop = !is.na(ScopusID),
            scop_fwci_x = if_else(Publication_Year < analysisyear - 2, scop_fwci_x, NA_real_),
@@ -299,8 +299,8 @@ indics_full_master <- function(data, startyear, stopyear, analysisyear) {
            scop_Ptop25 = if_else(Publication_Year < analysisyear - 2, scop_Ptop25, NA_integer_)
     )
 
-  wos_year <- wos %>%
-    group_by(Publication_Year) %>%
+  wos_year <- wos |>
+    group_by(Publication_Year) |>
     summarise(P_wos = sum(iswos, na.rm = TRUE),
               C = sum(Citations, na.rm = TRUE),
               C_avg = mean(Citations, na.rm = TRUE),
@@ -317,7 +317,7 @@ indics_full_master <- function(data, startyear, stopyear, analysisyear) {
               .groups = "drop"
     )
 
-  wos_total <- wos %>%
+  wos_total <- wos |>
     summarise(P_wos = sum(iswos, na.rm = TRUE),
               C = sum(Citations, na.rm = TRUE),
               C_avg = mean(Citations, na.rm = TRUE),
@@ -331,11 +331,11 @@ indics_full_master <- function(data, startyear, stopyear, analysisyear) {
               Jcf = mean(jcf, na.rm = TRUE),
               Top20p = sum(Jtop20, na.rm = TRUE),
               Top20share = mean(Jtop20, na.rm = TRUE)
-    ) %>%
+    ) |>
     mutate(Publication_Year = 'Total')
 
-  scop_year <- scop %>%
-    group_by(Publication_Year) %>%
+  scop_year <- scop |>
+    group_by(Publication_Year) |>
     summarise(P_scop = sum(isscop, na.rm = TRUE),
               C_scop = sum(scop_cscxo, na.rm = TRUE),
               C_avg_scop = mean(scop_cscxo, na.rm = TRUE),
@@ -352,7 +352,7 @@ indics_full_master <- function(data, startyear, stopyear, analysisyear) {
               .groups = "drop"
     )
 
-  scop_total <- scop %>%
+  scop_total <- scop |>
     summarise(P_scop = sum(isscop, na.rm = TRUE),
               C_scop = sum(scop_cscxo, na.rm = TRUE),
               C_avg_scop = mean(scop_cscxo, na.rm = TRUE),
@@ -366,13 +366,13 @@ indics_full_master <- function(data, startyear, stopyear, analysisyear) {
               Jcf_scop = mean(scop_snip, na.rm = TRUE),
               Top20p_scop = sum(scop_Jtop20, na.rm = TRUE),
               Top20share_scop = mean(scop_Jtop20, na.rm = TRUE)
-    ) %>%
+    ) |>
     mutate(Publication_Year = 'Total')
 
   scop <- bind_rows(scop_year, scop_total)
   wos <- bind_rows(wos_year, wos_total)
 
-  wos %>% full_join(scop, by = "Publication_Year")
+  wos |> full_join(scop, by = "Publication_Year")
 }
 
 
@@ -403,9 +403,9 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
     analysisyear <- as.integer(format(Sys.Date(), "%Y"))
   }
 
-  wos <- data %>%
+  wos <- data |>
     filter(Publication_Year %in% startyear:stopyear,
-           Publication_Type_WoS %in% c("Article", "Review")) %>%
+           Publication_Type_WoS %in% c("Article", "Review")) |>
     mutate(Publication_Year = as.character(Publication_Year),
            iswos = !is.na(WebofScience_ID),
            cf = if_else(Publication_Year < analysisyear - 2, cf, NA_real_),
@@ -414,9 +414,9 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
            Ptop25 = if_else(Publication_Year < analysisyear - 2, Ptop25, NA_real_)
     )
 
-  scop <- data %>%
+  scop <- data |>
     filter(Publication_Year %in% startyear:stopyear,
-           scop_doctype %in% c("Article", "Review")) %>%
+           scop_doctype %in% c("Article", "Review")) |>
     mutate(Publication_Year = as.character(Publication_Year),
            isscop = !is.na(ScopusID),
            scop_fwci_x = if_else(Publication_Year < analysisyear - 2, scop_fwci_x, NA_real_),
@@ -426,8 +426,8 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
     )
 
   wos_year <-
-    wos %>%
-    group_by(Publication_Year) %>%
+    wos |>
+    group_by(Publication_Year) |>
     summarise(P_wos = sum(iswos*Unit_Fraction, na.rm = TRUE),
               C = sum(Citations*Unit_Fraction, na.rm = TRUE),
               C_avg = weighted.mean(Citations, Unit_Fraction, na.rm = TRUE),
@@ -444,7 +444,7 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
               .groups = "drop"
     )
 
-  wos_total <- wos %>%
+  wos_total <- wos |>
     summarise(P_wos = sum(iswos*Unit_Fraction, na.rm = TRUE),
               C = sum(Citations*Unit_Fraction, na.rm = TRUE),
               C_avg = weighted.mean(Citations, Unit_Fraction, na.rm = TRUE),
@@ -458,11 +458,11 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
               Jcf = weighted.mean(jcf, Unit_Fraction, na.rm = TRUE),
               Top20p = sum(Jtop20*Unit_Fraction, na.rm = TRUE),
               Top20share = weighted.mean(Jtop20, Unit_Fraction, na.rm = TRUE)
-    ) %>%
+    ) |>
     mutate(Publication_Year = "Total")
 
-  scop_year <- scop %>%
-    group_by(Publication_Year) %>%
+  scop_year <- scop |>
+    group_by(Publication_Year) |>
     summarise(P_scop = sum(isscop*Unit_Fraction, na.rm = TRUE),
               C_scop = sum(scop_cscxo*Unit_Fraction, na.rm = TRUE),
               C_avg_scop = weighted.mean(scop_cscxo, Unit_Fraction, na.rm = TRUE),
@@ -479,7 +479,7 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
               .groups = "drop"
     )
 
-  scop_total <- scop %>%
+  scop_total <- scop |>
     summarise(P_scop = sum(isscop*Unit_Fraction, na.rm = TRUE),
               C_scop = sum(scop_cscxo*Unit_Fraction, na.rm = TRUE),
               C_avg_scop = weighted.mean(scop_cscxo, Unit_Fraction, na.rm = TRUE),
@@ -493,11 +493,11 @@ indics_frac_master <- function(data, startyear, stopyear, analysisyear) {
               Jcf_scop = weighted.mean(scop_snip, Unit_Fraction, na.rm = TRUE),
               Top20p_scop = sum(scop_Jtop20*Unit_Fraction, na.rm = TRUE),
               Top20share_scop = weighted.mean(scop_Jtop20, Unit_Fraction, na.rm = TRUE)
-    ) %>%
+    ) |>
     mutate(Publication_Year = "Total")
 
   scop <- bind_rows(scop_year, scop_total)
   wos <- bind_rows(wos_year, wos_total)
 
-  wos %>% full_join(scop, by = "Publication_Year")
+  wos |> full_join(scop, by = "Publication_Year")
 }

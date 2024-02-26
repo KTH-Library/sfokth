@@ -12,9 +12,9 @@ pi_years <- function(pilist, startyear, stopyear) {
 
   names(pilist)[1] <- "Id"
 
-  pilist  %>%
-    pivot_longer(cols = starts_with("X")) %>%
-    mutate(Year = as.integer(str_replace(name, 'X', ''))) %>%
-    filter(value != '') %>%
+  pilist |>
+    pivot_longer(cols = starts_with("X")) |>
+    mutate(Year = as.integer(str_replace(name, 'X', ''))) |>
+    filter(value != '') |>
     select(Id, Year)
 }
