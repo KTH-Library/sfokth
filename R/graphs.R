@@ -1,53 +1,75 @@
-#' Graph indicator by time
+#' Graph indicators by time
 #'
 #' @param df data frame with indicators by year
-#' @param graphvar name of column with indicator to create graph for
+#' @param graphvars names of columns with indicators to create graph for
 #' @param timevar name of column with time, default Publication_Year
+#' @param xlab label for X axis, default "Publication year"
+#' @param ylab label for Y axis, default "Indicator value"
+#' @param graphtitle main title for graph, default NULL
 #' @param horizontal where to put a horizontal line, default NULL
 #' @param perc set to TRUE for percent scale y axis, default FALSE
-#' @param graphcol color to use for curve
+#' @param pal color palette to use for indicator
 #' @param horizontal_col color to use for horizontal line
 #' @import ktheme dplyr ggplot2 scales
 #' @export
 graph_by_year <- function(df,
-                          graphvar,
+                          graphvars,
                           timevar = "Publication_Year",
+                          xlab = "Publication year",
+                          ylab = "Indicator value",
+                          graphtitle = NULL,
                           horizontal = NULL,
                           perc = FALSE,
-                          graphcol = kth_colors("blue"),
+                          pal =  palette_kth_neo(18),
                           horizontal_col = kth_colors("lightteal")) {
 
-  graphdf <- data.frame(xvar = df[, timevar], yvar = df[, graphvar]) |>
-    filter(xvar != "Total", !is.na(yvar)) |>
-    mutate(xvar = as.integer(xvar))
+  Indicator <- NULL
 
-  if(perc){
-    ymax <- max(0.2, ceiling(max(graphdf$yvar)*10)/10)
+  graphdf <- df |>
+    pivot_longer(cols = all_of(graphvars),
+                 names_to = "Indicator") |>
+    rename(x = all_of(timevar)) |>
+    select(Indicator, x, value) |>
+    arrange(Indicator, x)
+
+  graphcol <- pal[1:length(graphvars)] |> unname()
+
+  if(is.null(horizontal))
+  {
+    if(perc){
+      ymax <- max(0.2, ceiling(max(graphdf$value, na.rm = TRUE)*10)/10)
+    } else {
+      ymax <- max(2, ceiling(max(graphdf$value, na.rm = TRUE)))
+    }
   } else {
-    ymax <- max(2, ceiling(max(graphdf$yvar)))
+    if(perc){
+      ymax <- max(2*horizontal, ceiling(max(graphdf$value, na.rm = TRUE)*10)/10)
+    } else {
+      ymax <- max(2*horizontal, ceiling(max(graphdf$value, na.rm = TRUE)))
+    }
   }
 
-  breaks <- min(graphdf$xvar):max(graphdf$xvar)
-
-  # Add missing years to df
-  if(length(breaks) != nrow(graphdf)) {
-    extrayears <- breaks[!breaks %in% graphdf$xvar]
-    extrarows <- data.frame(xvar = extrayears)
-    graphdf <- bind_rows(graphdf, extrarows) |> arrange(xvar)
-  }
+  xbreaks <- min(graphdf$x):max(graphdf$x)
 
   gg <- ggplot(data = graphdf,
-         aes(x = xvar, y = yvar, group = 1)) +
-    geom_point(color = graphcol) +
-    geom_line(color = graphcol, linetype = "dashed") +
-    xlab(timevar) +
-    ylab(graphvar) +
+               aes(x = x,
+                   y = value,
+                   color = Indicator)) +
+    geom_point() +
+    geom_line(linetype = "dashed") +
+    scale_color_manual(values = graphcol) +
+    xlab(xlab) +
+    ylab(ylab) +
     theme_kth_neo() +
     theme(axis.title.y = element_text(vjust = 2.5),
           panel.grid.major.x = element_blank(),
-          panel.grid.minor.y = element_blank()) +
-    scale_x_continuous(breaks = breaks, labels = breaks, minor_breaks = NULL)
+          panel.grid.minor.y = element_blank(),
+          legend.position = 'bottom') +
+    scale_x_continuous(breaks = xbreaks, labels = xbreaks, minor_breaks = NULL)
 
+  if(!is.null(graphtitle)) {
+    gg <- gg + ggtitle(graphtitle)
+  }
   if(!is.null(horizontal)){
     gg <- gg + geom_hline(yintercept = horizontal, color = horizontal_col)
   }
@@ -69,6 +91,7 @@ graph_by_year <- function(df,
 #' @param yvar the name of the variable to be plotted on the Y axis
 #' @param xlab the label for the X axis (same as xvar is not given)
 #' @param ylab the label for the Y axis (same as yvar is not given)
+#' @param graphtitle main title for graph, default NULL
 #' @param sitevar the name of the circle label variable, default "site"
 #' @param sizevar the name of the size variable, defailt "p"
 #' @param percentage set to TRUE for percentage scales
@@ -86,6 +109,7 @@ xy_plot <- function(df,
                     yvar,
                     xlab,
                     ylab,
+                    graphtitle = NULL,
                     sitevar = "site",
                     sizevar = "p",
                     percentage = FALSE,
@@ -119,7 +143,7 @@ xy_plot <- function(df,
   xbreaks <-  seq(0, xmax, ifelse(percentage, 0.1, 0.5))
   ybreaks <-  seq(0, ymax, ifelse(percentage, 0.1, 0.5))
 
-  ggplot(tmp_df) +
+  gg <- ggplot(tmp_df) +
     geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
     geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
     geom_point(aes(x = x, y = y, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
@@ -136,6 +160,11 @@ xy_plot <- function(df,
     guides(color = guide_legend(override.aes = list(size = 5))) +
     xlab(xlab) +
     ylab(ylab)
+
+  if(!is.null(graphtitle))
+    gg <- gg + ggtitle(graphtitle)
+
+  gg
 }
 
 #' Plot cf and jcf by site with circles proportional to number of publications

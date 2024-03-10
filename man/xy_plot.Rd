@@ -12,6 +12,7 @@ xy_plot(
   yvar,
   xlab,
   ylab,
+  graphtitle = NULL,
   sitevar = "site",
   sizevar = "p",
   percentage = FALSE,
@@ -36,6 +37,8 @@ xy_plot(
 \item{xlab}{the label for the X axis (same as xvar is not given)}
 
 \item{ylab}{the label for the Y axis (same as yvar is not given)}
+
+\item{graphtitle}{main title for graph, default NULL}
 
 \item{sitevar}{the name of the circle label variable, default "site"}
 
