@@ -34,16 +34,21 @@ fetch_diva_csvall2 <- function(baseurl, startyear, stopyear) {
   url <- sprintf('http://%s/smash/export.jsf?format=csvall2&aq=[[]]&aqe=[]&aq2=[[{"dateIssued":{"from":"%d","to":"%d"}},{"publicationTypeCode":["review","bookReview","monographLicentiateThesis","article","comprehensiveLicentiateThesis","book","manuscript","patent","dissertation","conferenceProceedings","monographDoctoralThesis","report","comprehensiveDoctoralThesis","collection","chapter","conferencePaper","other"]},{"contentTypeCode":["refereed","science","other"]}]]&onlyFullText=false&noOfRows=100000&sortOrder=author_sort_asc', baseurl, startyear, stopyear)
   csvall2 <- read.csv(url, encoding = "UTF-8")
   names(csvall2)[1] <- "PID"
-  csvall2 |>
-    mutate(PID = trimws(PID),
-           ISI = str_pad(ISI, width = 15, side = "left", pad = "0"),
-           StartPage = as.character(StartPage),
-           EndPage = as.character(EndPage),
-           SeriesISSN = as.character(SeriesISSN),
-           SeriesEISSN = as.character(SeriesEISSN),
-           ISBN = as.character(ISBN),
-           ArticleId = as.character(ArticleId),
-           PublicationType = chr_unserialise_unicode(PublicationType))
+
+  if(nrow(csvall2) > 0) {
+    csvall2 <-  csvall2 |>
+      mutate(PID = trimws(PID),
+             ISI = str_pad(ISI, width = 15, side = "left", pad = "0"),
+             StartPage = as.character(StartPage),
+             EndPage = as.character(EndPage),
+             SeriesISSN = as.character(SeriesISSN),
+             SeriesEISSN = as.character(SeriesEISSN),
+             ISBN = as.character(ISBN),
+             ArticleId = as.character(ArticleId),
+             PublicationType = chr_unserialise_unicode(PublicationType))
+  }
+
+  csvall2
 }
 
 
@@ -89,14 +94,19 @@ searchauth_diva_csvall2 <- function(baseurl, authors, startyear, stopyear) {
           stopyear)
   csvall2 <- read.csv(url, encoding = "UTF-8")
   names(csvall2)[1] <- "PID"
-  csvall2 |>
-    mutate(PID = trimws(PID),
-           ISI = str_pad(ISI, width = 15, side = "left", pad = "0"),
-           StartPage = as.character(StartPage),
-           EndPage = as.character(EndPage),
-           SeriesISSN = as.character(SeriesISSN),
-           SeriesEISSN = as.character(SeriesEISSN),
-           ISBN = as.character(ISBN),
-           ArticleId = as.character(ArticleId),
-           PublicationType = chr_unserialise_unicode(PublicationType))
+
+  if(nrow(csvall2) > 0) {
+    csvall2 <-  csvall2 |>
+      mutate(PID = trimws(PID),
+             ISI = str_pad(ISI, width = 15, side = "left", pad = "0"),
+             StartPage = as.character(StartPage),
+             EndPage = as.character(EndPage),
+             SeriesISSN = as.character(SeriesISSN),
+             SeriesEISSN = as.character(SeriesEISSN),
+             ISBN = as.character(ISBN),
+             ArticleId = as.character(ArticleId),
+             PublicationType = chr_unserialise_unicode(PublicationType))
+  }
+
+  csvall2
 }
