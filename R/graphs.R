@@ -93,7 +93,8 @@ graph_by_year <- function(df,
 #' @param ylab the label for the Y axis (same as yvar is not given)
 #' @param graphtitle main title for graph, default NULL
 #' @param sitevar the name of the circle label variable, default "site"
-#' @param sizevar the name of the size variable, defailt "p"
+#' @param sitelab the label for the legend showing site
+#' @param sizevar the name of the size variable, default "p"
 #' @param percentage set to TRUE for percentage scales
 #' @param unfilled vector of sites to draw unfilled circle for, default empty
 #' @param maxsize maximum size of circle (default 30)
@@ -111,6 +112,7 @@ xy_plot <- function(df,
                     ylab,
                     graphtitle = NULL,
                     sitevar = "site",
+                    sitelab,
                     sizevar = "p",
                     percentage = FALSE,
                     unfilled = c(),
@@ -123,6 +125,8 @@ xy_plot <- function(df,
     xlab <- xvar
   if(missing(ylab))
     ylab <- yvar
+  if(missing(sitelab))
+    sitelab <- sitevar
 
   names(pal) <- NULL
 
@@ -147,8 +151,8 @@ xy_plot <- function(df,
     geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
     geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
     geom_point(aes(x = x, y = y, size = size, color = site, shape = site, stroke = 2, alpha = solid)) +
-    scale_color_manual(values = pal) +
-    scale_shape_manual(values = shapevals)  +
+    scale_color_manual(values = pal, name = sitelab) +
+    scale_shape_manual(values = shapevals, name = sitelab)  +
     scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
     scale_alpha_identity(guide = "none") +
     scale_x_continuous(limits = c(0, xmax), breaks = xbreaks,
@@ -305,4 +309,91 @@ bootstrap_graph <- function(samples, ylabel) {
                 ylabel = ylabel,
                 horizontal = 1,
                 perc = FALSE)
+}
+
+
+#' Alternative xy_graph
+#'
+#' Plot indicators X and Y by site with circles proportional to the number of publications
+#'
+#' @param df data frame with indicators by site (needs site, p, cf, jcf)
+#' @param xintercept where to put a vertical line
+#' @param yintercept where to put a horizontal line
+#' @param xvar the name of the variable to be plotted on the X axis
+#' @param yvar the name of the variable to be plotted on the Y axis
+#' @param xlab the label for the X axis
+#' @param ylab the label for the Y axis
+#' @param graphtitle main title for graph, default NULL
+#' @param sitevar the name of the circle label variable, default "site"
+#' @param sizevar the name of the size variable, defailt "p"
+#' @param percentage set to TRUE for percentage scales
+#' @param unfilled vector of sites to draw unfilled circle for, default empty
+#' @param maxsize maximum size of circle (default 30)
+#' @param pal colors to use for circles
+#' @param solid alpha value for circles, 1 = fully solid, 0 = fully transparent
+#' @param linecol color for horizontal/vertical lines
+#' @import ktheme dplyr ggplot2 scales
+#' @export
+xy2 <- function(df,
+                xintercept,
+                yintercept,
+                xvar,
+                yvar,
+                xlab,
+                ylab,
+                graphtitle = NULL,
+                sitevar = site,
+                sizevar = P,
+                percentage = FALSE,
+                unfilled = c(),
+                maxsize = 30,
+                pal = palette_kth_neo(18),
+                solid = 0.9,
+                linecol = kth_colors("red")) {
+
+  names(pal) <- NULL
+
+  tmp_df <- df |>
+    mutate(size = maxsize * sqrt({{sizevar}}/max({{sizevar}}))) |>
+    arrange({{sitevar}})
+
+  shapevals <- if_else(tmp_df |> pull({{sitevar}}) %in% unfilled, 1, 16)
+
+  minsize <- min(tmp_df$size)
+
+  xmax <- max(2*xintercept,
+              if_else(percentage,
+                      ceiling(10 * max(tmp_df |> pull({{xvar}})))/10,
+                      ceiling(max(tmp_df |> pull({{xvar}})))))
+  ymax <- max(2*yintercept,
+              if_else(percentage,
+                      ceiling(10 * max(tmp_df |> pull({{yvar}})))/10,
+                      ceiling(max(tmp_df |> pull({{yvar}})))))
+
+  xbreaks <-  seq(0, xmax, ifelse(percentage, 0.1, 0.5))
+  ybreaks <-  seq(0, ymax, ifelse(percentage, 0.1, 0.5))
+
+  gg <- ggplot(tmp_df) +
+    geom_vline(xintercept = xintercept, color = linecol, linewidth = 1) +
+    geom_hline(yintercept = yintercept, color = linecol, linewidth = 1) +
+    geom_point(aes(x = {{xvar}}, y = {{yvar}}, size = size, color = {{sitevar}}, shape = {{sitevar}}, stroke = 2, alpha = solid)) +
+    scale_color_manual(values = pal) +
+    scale_shape_manual(values = shapevals)  +
+    scale_size_continuous(range = c(minsize, maxsize), guide = "none") +
+    scale_alpha_identity(guide = "none") +
+    scale_x_continuous(limits = c(0, xmax), breaks = xbreaks,
+                       labels = ifelse(percentage, percent_format(), number_format()), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0, ymax), breaks = ybreaks,
+                       labels = ifelse(percentage, percent_format(), number_format()), expand = c(0,0)) +
+    theme_light() +
+    theme(legend.position = "bottom") +
+    guides(color = guide_legend(override.aes = list(size = 2))) +
+    xlab(xlab) +
+    ylab(ylab)
+
+  if(!is.null(graphtitle))
+    gg <- gg + ggtitle(graphtitle)
+
+  gg
+
 }
