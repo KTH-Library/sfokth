@@ -68,3 +68,27 @@ get_most_common <- function(data, group, id) {
     filter(r == 1) |>
     select({{group}}, {{id}})
 }
+
+#' Convert an UTF-8 string to ascii with UTF-8 characters replaced with
+#' \\uXXXX codes
+#' @param x the string to be converted
+#' @export
+asciify <- function(x) {
+  iconv(x, from = "UTF-8", to = "ASCII", sub = "c99")
+}
+
+#' Convert an UTF-8 file to ascii with UTF-8 characters replaced with
+#' \\uXXXX codes
+#' @param infile the file to be converted
+#' @param outfile a file to write the converted content to
+#' @param suffix a character string to add to the file name if no outfile is given
+#' @importFrom readr read_file write_file
+#' @export
+asciify_file <- function(infile, outfile, suffix = "_X") {
+  if(missing(outfile))
+    outfile <- gsub("(\\.[A-Za-z0-9]*$)", paste0(suffix, "\\1"), infile)
+
+  incontent <- read_file(infile)
+  outcontent <- asciify(incontent)
+  write_file(outcontent, outfile)
+}

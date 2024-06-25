@@ -18,4 +18,5 @@ Imports:
     ggplot2,
     ktheme,
     rlang,
-    scales
+    scales,
+    readr 
