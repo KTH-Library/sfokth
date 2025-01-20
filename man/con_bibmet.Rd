@@ -6,9 +6,9 @@
 \usage{
 con_bibmet(
   db = "BIBMET",
-  host = Sys.getenv("BIBMET_HOST"),
-  user = Sys.getenv("BIBMET_USER"),
-  pass = Sys.getenv("BIBMET_PASS")
+  host = Sys.getenv("DBHOST"),
+  user = Sys.getenv("DBUSER"),
+  pass = Sys.getenv("DBPASS")
 )
 }
 \arguments{
