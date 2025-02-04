@@ -19,4 +19,5 @@ Imports:
     ktheme,
     rlang,
     scales,
-    readr 
+    readr,
+    curl

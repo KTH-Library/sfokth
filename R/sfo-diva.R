@@ -5,13 +5,19 @@
 #' @param baseurl the base url for the DiVA instance
 #' @param startyear the first publication year to consider
 #' @param stopyear the last publication year to consider
-#' @import dplyr
-#' @importFrom utils read.csv
+#' @param savefile an optional filename to save the csv in
+#' @import dplyr curl
 #' @export
-fetch_diva_csv02 <- function(baseurl, startyear, stopyear) {
+fetch_diva_csv02 <- function(baseurl, startyear, stopyear, savefile = NULL) {
+
+  if(is.null(savefile))
+    savefile <- paste(tempfile(), "csv", sep = ".")
+
+
   url <- sprintf('http://%s/dice/csv02?query=-publicationTypeCode:studentThesis%%20+year:([%d%%20TO%%20%d])&start=0&rows=1000000&sort=author_sort%%20asc', baseurl, startyear, stopyear)
-  csv02 <- read.csv(url, encoding = "UTF-8")
-  names(csv02)[1] <- "PID"
+  curl_download(url, savefile)
+  csv02 <- read.csv(savefile, encoding = "UTF-8")
+
   csv02 |> mutate(PID = trimws(PID),
                    Id = tolower(trimws(Id)),
                    OrganisationIds = as.character(OrganisationIds))
@@ -22,18 +28,21 @@ fetch_diva_csv02 <- function(baseurl, startyear, stopyear) {
 #' @param baseurl the base url for the DiVA instance
 #' @param startyear the first publication year to consider
 #' @param stopyear the last publication year to consider
-#' @import dplyr
-#' @importFrom utils read.csv
+#' @param savefile an optional filename to save the csv in
+#' @import dplyr curl
 #' @importFrom stringr str_pad
 #' @importFrom rlang chr_unserialise_unicode
 #' @export
-fetch_diva_csvall2 <- function(baseurl, startyear, stopyear) {
+fetch_diva_csvall2 <- function(baseurl, startyear, stopyear, savefile = NULL) {
 
   ISI <- NULL
 
+  if(is.null(savefile))
+    savefile <- paste(tempfile(), "csv", sep = ".")
+
   url <- sprintf('http://%s/smash/export.jsf?format=csvall2&aq=[[]]&aqe=[]&aq2=[[{"dateIssued":{"from":"%d","to":"%d"}},{"publicationTypeCode":["review","bookReview","monographLicentiateThesis","article","comprehensiveLicentiateThesis","book","manuscript","patent","dissertation","conferenceProceedings","monographDoctoralThesis","report","comprehensiveDoctoralThesis","collection","chapter","conferencePaper","other"]},{"contentTypeCode":["refereed","science","other"]}]]&onlyFullText=false&noOfRows=100000&sortOrder=author_sort_asc', baseurl, startyear, stopyear)
-  csvall2 <- read.csv(url, encoding = "UTF-8")
-  names(csvall2)[1] <- "PID"
+  curl_download(url, destfile = savefile)
+  csvall2 <- read.csv(savefile, encoding = "UTF-8")
 
   if(nrow(csvall2) > 0) {
     csvall2 <-  csvall2 |>
@@ -58,17 +67,22 @@ fetch_diva_csvall2 <- function(baseurl, startyear, stopyear) {
 #' @param authors list of authors (Id and/or Orcid)
 #' @param startyear the first publication year to consider
 #' @param stopyear the last publication year to consider
-#' @import dplyr
-#' @importFrom utils read.csv
+#' @param savefile an optional filename to save the csv in
+#' @import dplyr curl
 #' @export
-searchauth_diva_csv02 <- function(baseurl, authors, startyear, stopyear) {
+searchauth_diva_csv02 <- function(baseurl, authors, startyear, stopyear, savefile = NULL) {
+
+  if(is.null(savefile))
+    savefile <- paste(tempfile(), "csv", sep = ".")
+
   authq <- paste(paste0('%22', authors, '%22'), collapse = "%20OR%20")
   url <- sprintf('http://%s/dice/csv02?query=-publicationTypeCode:studentThesis%%20+year:([%d%%20TO%%20%d])+authorId:(%s)&start=0&rows=1000000&sort=author_sort%%20asc', baseurl, startyear, stopyear, authq)
-  csv02 <- read.csv(url, encoding = "UTF-8")
-  names(csv02)[1] <- "PID"
+  curl_download(url, destfile = savefile)
+  csv02 <- read.csv(savefile, encoding = "UTF-8")
+
   csv02 |> mutate(PID = trimws(PID),
-                   Id = tolower(trimws(Id)),
-                   OrganisationIds = as.character(OrganisationIds))
+                  Id = tolower(trimws(Id)),
+                  OrganisationIds = as.character(OrganisationIds))
 }
 
 #' Get "csvall2" export from DiVA, search by authorId
@@ -77,14 +91,17 @@ searchauth_diva_csv02 <- function(baseurl, authors, startyear, stopyear) {
 #' @param authors list of authors (Id and/or Orcid)
 #' @param startyear the first publication year to consider
 #' @param stopyear the last publication year to consider
-#' @import dplyr
-#' @importFrom utils read.csv
+#' @param savefile an optional filename to save the csv in
+#' @import dplyr curl
 #' @importFrom stringr str_pad
 #' @importFrom rlang chr_unserialise_unicode
 #' @export
-searchauth_diva_csvall2 <- function(baseurl, authors, startyear, stopyear) {
+searchauth_diva_csvall2 <- function(baseurl, authors, startyear, stopyear, savefile = NULL) {
 
   ISI <- PID <- NULL
+
+  if(is.null(savefile))
+    savefile <- paste(tempfile(), "csv", sep = ".")
 
   authq <- paste(paste0('[{authorId:"', authors, '"}]'), collapse = ",")
   url <- sprintf('https://%s/smash/export.jsf?format=csvall2&aq=[%s]&aqe=[]&aq2=[[{"dateIssued":{"from":"%d","to":"%d"}},{"publicationTypeCode":["review","bookReview","monographLicentiateThesis","article","comprehensiveLicentiateThesis","book","manuscript","patent","dissertation","conferenceProceedings","monographDoctoralThesis","report","comprehensiveDoctoralThesis","collection","chapter","conferencePaper","other"]},{"contentTypeCode":["refereed","science","other"]}]]&onlyFullText=false&noOfRows=100000&sortOrder=author_sort_asc',
@@ -92,8 +109,8 @@ searchauth_diva_csvall2 <- function(baseurl, authors, startyear, stopyear) {
           authq,
           startyear,
           stopyear)
-  csvall2 <- read.csv(url, encoding = "UTF-8")
-  names(csvall2)[1] <- "PID"
+  curl_download(url, destfile = savefile)
+  csvall2 <- read.csv(savefile, encoding = "UTF-8")
 
   if(nrow(csvall2) > 0) {
     csvall2 <-  csvall2 |>

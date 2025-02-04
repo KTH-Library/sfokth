@@ -4,7 +4,7 @@
 \alias{searchauth_diva_csv02}
 \title{Get "csv02" export from DiVA, search by authorId}
 \usage{
-searchauth_diva_csv02(baseurl, authors, startyear, stopyear)
+searchauth_diva_csv02(baseurl, authors, startyear, stopyear, savefile = NULL)
 }
 \arguments{
 \item{baseurl}{the base url for the DiVA instance}
@@ -14,6 +14,8 @@ searchauth_diva_csv02(baseurl, authors, startyear, stopyear)
 \item{startyear}{the first publication year to consider}
 
 \item{stopyear}{the last publication year to consider}
+
+\item{savefile}{an optional filename to save the csv in}
 }
 \description{
 Get "csv02" export from DiVA, search by authorId
