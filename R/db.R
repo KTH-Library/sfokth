@@ -10,13 +10,18 @@ con_bibmet <- function(db = "BIBMET",
                        host = Sys.getenv("DBHOST"),
                        user = Sys.getenv("DBUSER"),
                        pass = Sys.getenv("DBPASS")){
+
+  sqldriver <- ifelse(Sys.getenv("SQL_SERVER_DRIVER") == "",
+                      "ODBC Driver 17 for SQL Server",
+                      Sys.getenv("SQL_SERVER_DRIVER"))
+
   dbConnect(
     odbc(),
-    driver = "ODBC Driver 17 for SQL Server",
+    driver = sqldriver,
     Port = 1433,
     server = host,
     database = db,
     UID = user,
     PWD = pass,
-    encoding = "UTF-8")
+    Encrypt = "No")
 }
