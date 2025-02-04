@@ -92,3 +92,18 @@ asciify_file <- function(infile, outfile, suffix = "_X") {
   outcontent <- asciify(incontent)
   write_file(outcontent, outfile)
 }
+
+#' Double sided setdiff
+#' @param set1 An object that can be treated as a set
+#' @param set2 An object that can be treated as a set
+#' @export
+doublediff <- function(set1, set2) {
+
+  name1 <- deparse(substitute(set1))
+  name2 <- deparse(substitute(set2))
+
+  string1 <- sprintf("Objects in %s not in %s: %s", name1, name2, set1 |> setdiff(set2) |> paste(collapse = ", "))
+  string2 <- sprintf("Objects in %s not in %s: %s", name2, name1, set2 |> setdiff(set1) |> paste(collapse = ", "))
+
+  writeLines(c(string1, string2))
+}
